@@ -9,6 +9,7 @@ func SetupRoutes(router *gin.Engine) {
 	authRoutes := router.Group("/auth")
     authRoutes.POST("/login", authLogin)
     authRoutes.POST("/register", authRegister)
+    authRoutes.POST("/renew", middlewares.AuthMiddleware(), authRenew)
 
 	userRoutes := router.Group("/user")
 	userRoutes.Use(middlewares.AuthMiddleware());
