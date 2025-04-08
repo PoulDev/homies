@@ -1,6 +1,8 @@
 package db
 
 import (
+	"log"
+
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -12,6 +14,7 @@ func IdOrnull(ID string) string {
 }
 
 func PreattyError(err error) string {
+	log.Println("Preattifing the following error: ", err.Error());
 	if mongo.IsDuplicateKeyError(err) {
 		return "This email address is already taken!"
 	}

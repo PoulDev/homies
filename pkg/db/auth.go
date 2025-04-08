@@ -65,6 +65,11 @@ func Register(email string, username string, password string) (string, error) {
 		return "", err
 	}
 
+	_, err = createCart(result.InsertedID.(primitive.ObjectID))
+	if (err != nil) {
+		return "", err
+	}
+
 	// returnato come stringa perche' solo pkg/db deve avere
 	// a che fare con i metodi & tipi di MongoDB.
 	return result.InsertedID.(primitive.ObjectID).Hex(), nil

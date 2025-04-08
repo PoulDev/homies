@@ -2,7 +2,6 @@ package main
 //dai
 import (
 	"log"
-	"time"
 
 	"github.com/PoulDev/roommates-api/config"
 	"github.com/PoulDev/roommates-api/pkg/db"
@@ -10,12 +9,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
-
-type Person struct {
-	Name     string    `form:"name"`
-	Address  string    `form:"address"`
-	Birthday time.Time `form:"birthday" time_format:"2006-01-02" time_utc:"1"`
-}
 
 func main() {
 	err := config.LoadConfig();

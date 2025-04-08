@@ -15,6 +15,7 @@ var (
 	client *mongo.Client
 	database *mongo.Database
 	users *mongo.Collection
+	carts *mongo.Collection
 )
 
 func ConnectDatabase() error {
@@ -43,6 +44,7 @@ func ConnectDatabase() error {
 
 	database = client.Database(config.DBName)
 	users = database.Collection("users")
+	carts = database.Collection("carts")
 
 	return nil;
 }
