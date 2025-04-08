@@ -5,8 +5,7 @@ name: Release Binaries
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [ "main" ]
 
 permissions:
   contents: write  # Grant write permissions to the contents scope
