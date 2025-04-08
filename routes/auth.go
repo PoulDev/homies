@@ -1,38 +1,48 @@
 package routes
 
 import (
+	"log"
 	_ "log"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 
-	"github.com/PoulDev/roommates-api/auth"
+	"github.com/PoulDev/roommates-api/pkg/auth"
+	"github.com/PoulDev/roommates-api/pkg/db"
 )
 
 type User struct {
 	Email string `json:"email" binding:"required,email"` // REQUIRED
 	Password string `json:"pwd" binding:"required"` // REQUIRED
-	Name string `json:"name"` // solo in register
+	Username string `json:"name"` // solo in register
 }
 
 // TODO: Controllare i campi
+// TODO: Database register & login
 
 func authRegister(c *gin.Context) {
 	var user User;
 	err := c.ShouldBind(&user)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": "Invalid Data!"})
 		return
 	}
 
+	uid, err := db.Register(user.Email, user.Username, user.Password)
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": db.PreattyError(err)})
+		return
+	}
 
 	tokenString, err := auth.GenToken(jwt.MapClaims{
-		"uid": "12123", // TODO: user id
+		"uid": uid, // TODO: user id
+		"op": true,
 		"exp": time.Now().UTC().Add(time.Hour * 24 * 21).Unix(),
 	})
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		log.Println("JWT ERROR: ", err.Error())
+		c.JSON(400, gin.H{"error": "JWT error"})
 		return
 	}
 
@@ -43,11 +53,26 @@ func authLogin(c *gin.Context) {
 	var user User;
 	err := c.ShouldBind(&user)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": "Invalid Data!"})
 		return
 	}
 
-	c.String(200, "Successfully logged in!");
+	dbuser, err := db.Login(user.Email, user.Password)
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": db.PreattyError(err)})
+		return
+	}
+
+	tokenString, err := auth.GenToken(jwt.MapClaims{
+		"uid": dbuser.UID,
+		"exp": time.Now().UTC().Add(time.Hour * 24 * 7 * 3).Unix(),
+	})
+
+	c.JSON(200, gin.H{
+		"name": dbuser.Username, 
+		"email": dbuser.Email,
+		"token": tokenString,
+	});
 }
 
 func authRenew(c *gin.Context) {
@@ -58,7 +83,7 @@ func authRenew(c *gin.Context) {
 
 	// l'utente ha 7 giorni per rinnovare il token
 	if exp.Sub(now).Hours() > (24 * 7) {
-		c.JSON(400, gin.H{"error": "The token will still be valid for some days, please retry later."})
+		c.JSON(400, gin.H{"error": "This token will still be valid for some days, please retry later."})
 		return
 	}
 	// delta < 0 e' controllato dall'auth middleware
@@ -68,9 +93,11 @@ func authRenew(c *gin.Context) {
 		"exp": time.Now().UTC().Add(time.Hour * 24 * 7 * 3).Unix(),
 	})
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		log.Println("JWT ERROR: ", err.Error())
+		c.JSON(400, gin.H{"error": "JWT error"})
 		return
 	}
 
 	c.JSON(200, gin.H{"token": tokenString});
 }
+

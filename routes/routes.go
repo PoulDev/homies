@@ -9,9 +9,13 @@ func SetupRoutes(router *gin.Engine) {
 	authRoutes := router.Group("/auth")
     authRoutes.POST("/login", authLogin)
     authRoutes.POST("/register", authRegister)
-    authRoutes.POST("/renew", middlewares.AuthMiddleware(), authRenew)
+    authRoutes.POST("/renew", middlewares.AuthMiddleware, authRenew)
 
 	userRoutes := router.Group("/user")
-	userRoutes.Use(middlewares.AuthMiddleware());
+	userRoutes.Use(middlewares.AuthMiddleware);
 	userRoutes.GET("/me", userMe)
+
+	debugRoutes := router.Group("/debug")
+	debugRoutes.Use(middlewares.AuthMiddleware, middlewares.AdminMiddleware);
+	debugRoutes.GET("/db/check", checkDatabase)
 }

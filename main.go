@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/PoulDev/roommates-api/config"
+	"github.com/PoulDev/roommates-api/pkg/db"
 	"github.com/PoulDev/roommates-api/routes"
 
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,12 @@ func main() {
 	err := config.LoadConfig();
 	if (err != nil) {
 		log.Println("!! FROCIAZZO MANCANO LE ENVIRONMENT VARIABLES");
+		log.Panic(err);
+	}
+
+	err = db.ConnectDatabase()
+	if (err != nil) {
+		log.Println("!! CONNESSIONE AL DATABASE FALLITA");
 		log.Panic(err);
 	}
 
