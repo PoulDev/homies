@@ -77,6 +77,13 @@ func authLogin(c *gin.Context) {
 func authRenew(c *gin.Context) {
 	jwtdata, _ := c.Get("data")
 
+	// Controllo che l'account non sia stato rimosso dal DB [ vedi DATABASE.md ]
+	_, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
 	exp := time.Unix(int64(jwtdata.(jwt.MapClaims)["exp"].(float64)), 0)
 	now := time.Now().UTC()
 
