@@ -15,7 +15,9 @@ db.users.createIndex({ house: 1 })
 
 ## houses Collection 
 il valore `owner` deve essere unico. Ogni persona puo' creare ed essere in una sola casa.
-
+```
+db.houses.createIndex({ owner: 1 }, { unique: true })
+```
 
 # CodeBase
 SE le funzioni del database contengono parametri ID allora avranno due versioni:
@@ -29,7 +31,7 @@ Solo internamente il DB utilizza tipi e metodi MongoDB.
 Questo per permettere di cambiare il database potendo riscrivere solamente `pkg/db`,
 lasciando il resto della codebase invariata.
 
-> [!NOTE]
+> [!WARNING]
 > Per evitare troppe richieste al database il server **NON** controlla
 > l'uid del jwt token per ogni singola richiesta.
 > questo significa che anche se l'account di un utente viene eliminato/bannato/sospeso
