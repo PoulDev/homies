@@ -33,14 +33,13 @@ lasciando il resto della codebase invariata.
 
 > [!WARNING]
 > Per evitare troppe richieste al database il server **NON** controlla
-> l'uid del jwt token per ogni singola richiesta.
-> questo significa che anche se l'account di un utente viene eliminato/bannato/sospeso
-> questo potra' continuare a fare richieste.
-> Anche se apparentemente e' uno schifo al momento non ci serve nessun tipo di ban/sospensione,
-> e considerando la schifezza di server che abbiamo lo ritengo un trade-off che dobbiamo fare.
-> Per la questione account eliminato: 
->   - Una volta eliminato viene effettuato il logout
+> che l'uid del jwt token sia valido per ogni singola richiesta.
+> questo significa che anche se l'account di un utente viene eliminato/bannato/sospeso potra' comunque continuare a fare richieste.
+> Anche se e' uno schifo al momento non ci serve nessun tipo di ban/sospensione,
+> e considerando la schifezza di server che abbiamo lo ritengo un trade-off che dobbiamo accettare.
+> alcune note sull'account eliminato/bannato/sospeso che puo' continuare ad essere utilizzato: 
+>   - in caso di eliminazione account viene effettuato il logout.
 >   - i login ovviamente diventano impossibili.
->   - un attaccante potrebbe usare account eliminati per eseguire azioni
->   - L'account eliminato rimane quindi utilizzabile per 21 giorni ( poi non potra' fare il `/auth/renew` )
+>   - L'account sarebbe quindi utilizzabile per 21 giorni, fino a quando non sara' necessario rinnovare il token, cosa che ovviamente l'API blocchera'.
+
 
