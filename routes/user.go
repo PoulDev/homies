@@ -12,7 +12,7 @@ func userMe(c *gin.Context) {
 	
 	user, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": db.PreattyError(err)})
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -23,3 +23,18 @@ func userMe(c *gin.Context) {
 	});
 }
 
+func userHouse(c *gin.Context) {
+	jwtdata, _ := c.Get("data")
+
+	house, err := db.GetUserHouse(jwtdata.(jwt.MapClaims)["uid"].(string))
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"name": house.Name,
+		"owner": house.Owner,
+		"members": house.Members,
+	})
+}

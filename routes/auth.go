@@ -2,7 +2,6 @@ package routes
 
 import (
 	"log"
-	_ "log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -31,7 +30,7 @@ func authRegister(c *gin.Context) {
 
 	uid, err := db.Register(user.Email, user.Username, user.Password)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": db.PreattyError(err)})
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -59,7 +58,7 @@ func authLogin(c *gin.Context) {
 
 	dbuser, err := db.Login(user.Email, user.Password)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": db.PreattyError(err)})
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 

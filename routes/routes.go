@@ -14,6 +14,8 @@ func SetupRoutes(router *gin.Engine) {
 	userRoutes := router.Group("/user")
 	userRoutes.Use(middlewares.AuthMiddleware);
 	userRoutes.GET("/me", userMe)
+	userRoutes.GET("/house", userHouse)
+	userRoutes.POST("/house", createHouse)
 	
 	cartRoutes := router.Group("/cart")
 	cartRoutes.Use(middlewares.AuthMiddleware)

@@ -1,9 +1,12 @@
 package db
 
 import (
+	"errors"
+
 	"github.com/PoulDev/roommates-api/pkg/auth"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"context"
 	"time"
@@ -17,7 +20,7 @@ type User struct {
 }
 
 type dbUser struct {
-	Id primitive.ObjectID		`bson:"_id,omitempty"`
+	ID primitive.ObjectID		`bson:"_id,omitempty"`
 	Email string				`bson:"email"`
 	Username string				`bson:"username"`
 	Password []byte				`bson:"pwd"`
@@ -34,11 +37,14 @@ func Login(email string, password string) (User, error) {
 
 	err := users.FindOne(ctx, filter).Decode(&dbuser)
 	if (err != nil) {
+		if (err == mongo.ErrNoDocuments) {
+			return User{}, errors.New("No account associated with this email!")
+		}
 		return User{}, err
 	}
 
 	return User{
-		UID:      dbuser.Id.Hex(),
+		UID:      dbuser.ID.Hex(),
 		Username: dbuser.Username,
 		Email:    dbuser.Email,
 		House:    dbuser.House.Hex(),
@@ -62,11 +68,10 @@ func Register(email string, username string, password string) (string, error) {
 
 	result, err := users.InsertOne(ctx, dbuser)
 	if (err != nil) {
-		return "", err
-	}
+		if (mongo.IsDuplicateKeyError(err)) {
+			return "", errors.New("This email is already taken!")
+		}
 
-	_, err = createCart(result.InsertedID.(primitive.ObjectID))
-	if (err != nil) {
 		return "", err
 	}
 

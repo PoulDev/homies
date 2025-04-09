@@ -12,7 +12,7 @@ func myShoppingCart(c *gin.Context) {
 	
 	cart, err := db.GetCart(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": db.PreattyError(err)})
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
