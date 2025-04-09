@@ -1,8 +1,12 @@
 # MongoDB DataBase Setup
 
 NAME: `roommates`
-Collections:
+
+
+**Collections**:
     - `users`
+    - `houses`
+    - `carts`
 
 
 ## users Collection
