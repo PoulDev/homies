@@ -1,5 +1,5 @@
 package main
-//dai
+
 import (
 	"log"
 
