@@ -21,11 +21,10 @@ db.houses.createIndex({ owner: 1 }, { unique: true })
 
 # CodeBase
 SE le funzioni del database contengono parametri ID allora avranno due versioni:
-nomeFunzione _(privata)_:
-    gli ID vengono passati come `primitive.ObjectId`
-NomeFunzione _(pubblica)_:
-    Si limita a convertire i parametri ID da stringa a ObjectId,
-    poi utilizza `nomeFunzione` _(privata)_.
+- nomeFunzione _(privata)_
+    - gli ID vengono passati come `primitive.ObjectId`
+- NomeFunzione _(pubblica)_:
+    - Si limita a convertire i parametri ID da stringa a ObjectId, poi utilizza `nomeFunzione` _(privata)_.
 
 Solo internamente il DB utilizza tipi e metodi MongoDB.
 Questo per permettere di cambiare il database potendo riscrivere solamente `pkg/db`,
