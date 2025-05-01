@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/PoulDev/roommates-api/pkg/auth"
+	"github.com/PoulDev/roommates-api/pkg/avatar"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -17,12 +18,14 @@ type User struct {
 	Username string
 	Email string
 	House string
+	Avatar avatar.Avatar
 }
 
 type dbUser struct {
 	ID primitive.ObjectID		`bson:"_id,omitempty"`
 	Email string				`bson:"email"`
 	Username string				`bson:"username"`
+	Avatar avatar.Avatar		`bson:"avatar"`
 	Password []byte				`bson:"pwd"`
 	Salt []byte					`bson:"salt"`
 	House primitive.ObjectID	`bson:"house"`
@@ -48,10 +51,11 @@ func Login(email string, password string) (User, error) {
 		Username: dbuser.Username,
 		Email:    dbuser.Email,
 		House:    dbuser.House.Hex(),
+		Avatar:   dbuser.Avatar,
 	}, nil
 }
 
-func Register(email string, username string, password string) (string, error) {
+func Register(email string, username string, password string, avatar avatar.Avatar) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -63,6 +67,7 @@ func Register(email string, username string, password string) (string, error) {
 	var dbuser dbUser
 	dbuser.Email = email
 	dbuser.Username = username
+	dbuser.Avatar = avatar
 	dbuser.Password = hash
 	dbuser.Salt = salt
 

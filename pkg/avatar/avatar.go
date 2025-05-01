@@ -12,15 +12,15 @@ type Color struct {
 }
 
 type Avatar struct {
-	bgColor   string
-	faceColor string
-	faceX     float64
-	faceY     float64
-	leX       float64
-	leY       float64
-	reX       float64
-	reY       float64
-	bezier    string
+	BgColor   string  `bson:"bgColor"`
+	FaceColor string  `bson:"faceColor"`
+	FaceX     float32 `bson:"faceX"`
+	FaceY     float32 `bson:"faceY"`
+	LeX       float32 `bson:"leX"`
+	LeY       float32 `bson:"leY"`
+	ReX       float32 `bson:"reX"`
+	ReY       float32 `bson:"reY"`
+	Bezier    string  `bson:"bezier"`
 }
 
 var colors = []Color{
@@ -39,55 +39,55 @@ var colors = []Color{
 }
 
 func isDark(color Color) bool {
-	luminance := float64(0.2126)*float64(color.R) + float64(0.7152)*float64(color.G) + float64(0.0722)*float64(color.B)
-	return luminance <= 190
+	luminance := float64(0.2126)*float64(color.R) + float64(0.7152)*float64(color.G) + float64(0.0722)*float64(color.B);
+	return luminance <= 190;
 }
 
 func changeColor(v int) int {
 	val := float64(v) + rand.Float64()*30.0 - 15
 	if val > 255 {
-		val = 255
+		val = 255;
 	} else if v < 0 {
-		val = 0
+		val = 0;
 	}
-	return int(val)
+	return int(val);
 }
 
 func color2hex(color Color) string {
-	return fmt.Sprintf("%x%x%x", color.R, color.G, color.B)
+	return fmt.Sprintf("%x%x%x", color.R, color.G, color.B);
 }
 
 func RandAvatar() Avatar {
-	oColor := colors[rand.IntN(len(colors))]
+	oColor := colors[rand.IntN(len(colors))];
 	RGBcolor := Color{
 		changeColor(oColor.R),
 		changeColor(oColor.G),
 		changeColor(oColor.B),
 	}
 
-	color := color2hex(RGBcolor)
+	color := color2hex(RGBcolor);
 
-	firstPoint := fmt.Sprintf("%d %d", rand.IntN(4), 1+rand.IntN(2))
-	secondPoint := fmt.Sprintf("%d %d", rand.IntN(4)+3, 1+rand.IntN(2))
+	firstPoint := fmt.Sprintf("%d %d", rand.IntN(4), 1+rand.IntN(2));
+	secondPoint := fmt.Sprintf("%d %d", rand.IntN(4)+3, 1+rand.IntN(2));
 
-	eyesSpace := (rand.Float64()*8 + 4) / 2
+	eyesSpace := (rand.Float32()*8 + 4) / 2;
 
-	var faceColor string
+	var faceColor string;
 	if isDark(RGBcolor) {
-		faceColor = "EFEFEF"
+		faceColor = "EFEFEF";
 	} else {
-		faceColor = "010101"
+		faceColor = "010101";
 	}
 
 	return Avatar{
-		bgColor:   color,
-		faceColor: faceColor,
-		faceX:     rand.Float64()*39 + 7,
-		faceY:     rand.Float64()*40 + 7,
-		leX:       6 - eyesSpace,
-		leY:       2 + rand.Float64()*4,
-		reX:       6 + eyesSpace,
-		reY:       2 + rand.Float64()*4,
-		bezier:    fmt.Sprintf("%s %s 6 0", firstPoint, secondPoint),
+		BgColor:   color,
+		FaceColor: faceColor,
+		FaceX:     rand.Float32()*39 + 7,
+		FaceY:     rand.Float32()*40 + 7,
+		LeX:       6 - eyesSpace,
+		LeY:       2 + rand.Float32()*4,
+		ReX:       6 + eyesSpace,
+		ReY:       2 + rand.Float32()*4,
+		Bezier:    fmt.Sprintf("%s %s 6 0", firstPoint, secondPoint),
 	}
 }

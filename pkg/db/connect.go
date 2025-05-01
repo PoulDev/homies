@@ -21,14 +21,15 @@ var (
 )
 
 func ConnectDatabase() error {
-	credentials := options.Credential{
-		Username: config.DBUser,
-		Password: config.DBPassword,
-		AuthSource: config.DBName,
+	clientOptions := options.Client().SetHosts([]string{config.DBHost})
+
+	if (config.DBUser != "none") {
+		clientOptions = clientOptions.SetAuth(options.Credential{
+			Username: config.DBUser,
+			Password: config.DBPassword,
+			AuthSource: config.DBName,
+		})
 	}
-	clientOptions := options.Client().
-					SetAuth(credentials).
-					SetHosts([]string{config.DBHost})
 
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

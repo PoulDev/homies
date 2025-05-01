@@ -24,6 +24,7 @@ func getUser(id primitive.ObjectID) (User, error) {
 		Username: dbuser.Username,
 		Email:    dbuser.Email,
 		House:    dbuser.House.Hex(),
+		Avatar:   dbuser.Avatar,
 	}, nil
 }
 

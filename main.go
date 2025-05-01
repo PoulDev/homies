@@ -6,11 +6,13 @@ import (
 	"github.com/PoulDev/roommates-api/config"
 	"github.com/PoulDev/roommates-api/pkg/db"
 	"github.com/PoulDev/roommates-api/routes"
+	"github.com/PoulDev/roommates-api/pkg/avatar"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	log.Println(avatar.RandAvatar());
 	err := config.LoadConfig();
 	if (err != nil) {
 		log.Println("!! FROCIAZZO MANCANO LE ENVIRONMENT VARIABLES");

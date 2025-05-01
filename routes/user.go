@@ -20,6 +20,7 @@ func userMe(c *gin.Context) {
 		"username": user.Username,
 		"email": user.Email,
 		"house": db.IdOrnull(user.House),
+		"avatar": user.Avatar,
 	});
 }
 

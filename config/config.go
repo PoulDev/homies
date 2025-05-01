@@ -29,10 +29,12 @@ func LoadConfig() error {
 	if (err != nil) {return err}
 
     DBUser, err = getEnv("DB_USER");
-	if (err != nil) {return err}
-    
-	DBPassword, err = getEnv("DB_PASSWORD");
-	if (err != nil) {return err}
+	if (err != nil) {DBUser = "none"}
+   
+	if (DBUser != "none") {
+		DBPassword, err = getEnv("DB_PASSWORD");
+		if (err != nil) {DBPassword = "none"}
+	}
     
 	DBName, err = getEnv("DB_NAME");
 	if (err != nil) {return err}

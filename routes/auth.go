@@ -8,6 +8,8 @@ import (
 	"github.com/golang-jwt/jwt"
 
 	"github.com/PoulDev/roommates-api/pkg/auth"
+	"github.com/PoulDev/roommates-api/pkg/avatar"
+	"github.com/PoulDev/roommates-api/pkg/checks"
 	"github.com/PoulDev/roommates-api/pkg/db"
 )
 
@@ -28,15 +30,26 @@ func authRegister(c *gin.Context) {
 		return
 	}
 
-	uid, err := db.Register(user.Email, user.Username, user.Password)
+	errMsg := checks.CheckUsername(user.Username)
+	if (errMsg != "") {
+		c.JSON(400, gin.H{"error": errMsg})
+		return
+	}
+
+	errMsg = checks.CheckPassword(user.Password)
+	if (errMsg != "") {
+		c.JSON(400, gin.H{"error": errMsg})
+		return
+	}
+
+	uid, err := db.Register(user.Email, user.Username, user.Password, avatar.RandAvatar())
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
 	tokenString, err := auth.GenToken(jwt.MapClaims{
-		"uid": uid, // TODO: user id
-		"op": true,
+		"uid": uid,
 		"exp": time.Now().UTC().Add(time.Hour * 24 * 21).Unix(),
 	})
 	if (err != nil) {
@@ -70,6 +83,7 @@ func authLogin(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"name": dbuser.Username, 
 		"email": dbuser.Email,
+		"avatar": dbuser.Avatar,
 		"token": tokenString,
 	});
 }
