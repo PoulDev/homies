@@ -11,7 +11,7 @@ var (
 	iterations = uint32(1<<8)
 	memory = uint32(1<<14)
 	threads = uint8(2)
-	length = uint32(32)
+	length = uint32(64) // old: 32
 )
 
 func HashPassword(password string) ([]byte, []byte, error) {
