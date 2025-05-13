@@ -1,11 +1,7 @@
 package db
 
 import (
-	_ "fmt"
-	_ "database/sql"
-
-	_ "github.com/PoulDev/roommates-api/config"
-	_ "github.com/go-sql-driver/mysql"
+	"fmt"
 )
 
 type House struct {
@@ -16,10 +12,40 @@ type House struct {
 
 
 func NewHouse(name string, owner string) (string, error) {
-	return "", nil
+	userRes, err := db.Exec(`
+		INSERT INTO houses (name, owner_id)
+		VALUES (?, ?)`,
+		name, owner,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	userId, err := userRes.LastInsertId()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%d", userId), nil;
 }
 
+// ** Mai utilizzata, (forse) non necessaria
 func GetHouse(house string) (House, error) {
-	return House{}, nil
+	var (
+		name string
+		owner_id int
+	)
+
+	err := db.QueryRow("SELECT name, owner_id FROM houses WHERE id = ?", house).Scan(&name, &owner_id)
+
+	if (err != nil) {
+		return House{}, err
+	}
+
+	return House{
+		Name: name,
+		Owner: fmt.Sprintf("%d", owner_id),
+	}, nil;
 }
+
 

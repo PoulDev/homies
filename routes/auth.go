@@ -83,7 +83,6 @@ func authLogin(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"name": dbuser.Username, 
 		"email": dbuser.Email,
-		"avatar": dbuser.Avatar,
 		"token": tokenString,
 	});
 }
