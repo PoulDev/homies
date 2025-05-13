@@ -6,43 +6,37 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-
-func userMe(c *gin.Context) {
+func userInfo(c *gin.Context) {
+	id_param := c.Param("id")
 	jwtdata, _ := c.Get("data")
-	
-	user, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
+
+	uid := id_param
+
+	if (id_param == "me") {
+		uid = jwtdata.(jwt.MapClaims)["uid"].(string)
+	}
+
+	user, err := db.GetUser(uid)
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, gin.H{
+	response := gin.H{
 		"username": user.Username,
-		"email": user.Email,
-		"house": db.IdOrnull(user.House),
-	});
-}
-
-func userHouse(c *gin.Context) {
-	jwtdata, _ := c.Get("data")
-
-	house, err := db.GetUserHouse(jwtdata.(jwt.MapClaims)["uid"].(string))
-	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
+		"house": user.House,
+		"avatar": user.Avatar,
 	}
 
-	c.JSON(200, gin.H{
-		"name": house.Name,
-		"owner": house.Owner,
-		"members": house.Members,
-	})
+	if (id_param == "me") {
+		response["email"] = user.Email
+	}
+
+	c.JSON(200, response);
 }
 
-func userAvatar(c *gin.Context) {
-	jwtdata, _ := c.Get("data")
-
-	avatar, err := db.GetUserAvatar(jwtdata.(jwt.MapClaims)["uid"].(string))
+func getAvatar(c *gin.Context) {
+	avatar, err := db.GetAvatar(c.Param("id"))
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return

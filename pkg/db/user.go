@@ -2,28 +2,30 @@ package db
 
 import (
 	"database/sql"
-	_ "database/sql"
 	"errors"
 	"fmt"
-	_ "fmt"
+	"log"
+	"strconv"
 
-	_ "github.com/PoulDev/roommates-api/config"
 	"github.com/PoulDev/roommates-api/pkg/avatar"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 func GetUser(id string) (User, error) {
 	var (
-		ID int
 		username string
 		dbemail string
+		avatar int64
 		house sql.NullInt64
 	)
 
-	err := db.QueryRow(`
-		SELECT id, name, email, house
-		FROM users WHERE id = ?`, id).
-		Scan(&ID, &username, &dbemail, &house);
+	b_id, err := UUIDString2Bytes(id);
+	if (err != nil) { return User{}, err; }
+
+	err = db.QueryRow(`
+		SELECT name, email, house, avatar
+		FROM users WHERE id = ?`, b_id).
+		Scan(&username, &dbemail, &house, &avatar);
 
 	if (err != nil) {
 		return User{}, err
@@ -35,14 +37,41 @@ func GetUser(id string) (User, error) {
 	}
 
 	return User{
-		UID: fmt.Sprintf("%d", ID),
+		UID: id,
 		Username: username,
+		Avatar: fmt.Sprintf("%d", avatar),
 		Email: dbemail,
 		House: houseString,
 	}, nil;
 }
 
-func ChangeHouse(user string, house string) error { // !! TODO
+func ChangeHouse(user string, house string, make_owner bool) error {
+	userid, err := UUIDString2Bytes(user)
+	if (err != nil) { return err }
+
+	houseid, err := strconv.Atoi(house)
+	if (err != nil) { return err }
+
+	if (make_owner) {
+		_, err = db.Exec("UPDATE users SET house = ?, is_owner = TRUE WHERE id = ?", houseid, userid)
+	} else {
+		_, err = db.Exec("UPDATE users SET house = ? WHERE id = ?", houseid, userid)
+	}
+
+	log.Println("Making admin", user, userid)
+
+	if (err != nil) { return err }
+
+	return nil;
+}
+
+func MakeHouseOwner(user string, owner bool) error {
+	userid, err := UUIDString2Bytes(user)
+	if (err != nil) { return err }
+
+	_, err = db.Exec("UPDATE users SET is_owner = ? WHERE id = ?", owner, userid)
+	if (err != nil) { return err }
+
 	return nil;
 }
 
@@ -51,9 +80,12 @@ func GetUserHouse(user string) (House, error) {
 		tmp_houseid sql.NullInt64
 		houseid int64
 		name string
-		owner_id int64
 	)
-	err := db.QueryRow(`SELECT house FROM users WHERE id = ?`, user).Scan(&tmp_houseid);
+
+	b_id, err := UUIDString2Bytes(user);
+	if (err != nil) { return House{}, err; }
+
+	err = db.QueryRow(`SELECT house FROM users WHERE id = ?`, b_id).Scan(&tmp_houseid);
 
 	if (err != nil) {
 		return House{}, err
@@ -65,7 +97,7 @@ func GetUserHouse(user string) (House, error) {
 		houseid = tmp_houseid.Int64
 	}
 
-	err = db.QueryRow("SELECT name, owner_id FROM houses WHERE id = ?", houseid).Scan(&name, &owner_id)
+	err = db.QueryRow("SELECT name FROM houses WHERE id = ?", houseid).Scan(&name)
 
 	if (err != nil) {
 		return House{}, err
@@ -73,11 +105,10 @@ func GetUserHouse(user string) (House, error) {
 
 	return House{
 		Name: name,
-		Owner: fmt.Sprintf("%d", owner_id),
 	}, nil;
 }
 
-func GetUserAvatar(avatarid string) (avatar.Avatar, error) {
+func GetAvatar(avatarid string) (avatar.Avatar, error) {
 	var (
 		bg_color string
 		face_color string

@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/PoulDev/roommates-api/pkg/auth"
 	"github.com/PoulDev/roommates-api/pkg/avatar"
+	"github.com/google/uuid"
 )
 
 type User struct {
@@ -15,6 +15,7 @@ type User struct {
 	Username string
 	Email string
 	House string
+	Avatar string
 }
 
 func Register(email string, username string, password string, avatar avatar.Avatar) (string, error) {
@@ -39,27 +40,24 @@ func Register(email string, username string, password string, avatar avatar.Avat
 		return "", err
 	}
 
-	userRes, err := db.Exec(`
-		INSERT INTO users (name, email, pwd_hash, pwd_salt, avatar)
-		VALUES (?, ?, ?, ?, ?)`,
-		username, email, hash, salt, avatarId,
+	userId := uuid.New();
+
+	_, err = db.Exec(`
+		INSERT INTO users (id, name, email, pwd_hash, pwd_salt, avatar)
+		VALUES (?, ?, ?, ?, ?, ?)`,
+		UUID2Bytes(userId), username, email, hash, salt, avatarId,
 	)
 	if err != nil {
 		return "", err
 	}
 
-	userId, err := userRes.LastInsertId()
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%d", userId), nil
+	return userId.String(), nil
 }
 
 
 func Login(email string, password string) (User, error) {
 	var (
-		ID int
+		ID []byte
 		username string
 		dbemail string
 		house sql.NullInt64
@@ -76,8 +74,6 @@ func Login(email string, password string) (User, error) {
 		return User{}, errors.New("Password mismatch");
 	}
 
-	log.Println("Login Successful");
-
 	var houseString string;
 	if (house.Valid) {
 		houseString = fmt.Sprintf("%d", house.Int64)
@@ -85,8 +81,13 @@ func Login(email string, password string) (User, error) {
 		houseString = "null";
 	}
 
+	uid, err := UUIDBytes2String(ID)
+	if (err != nil) {
+		return User{}, err;
+	}
+
 	return User{
-		UID: fmt.Sprintf("%d", ID),
+		UID: uid,
 		Username: username,
 		Email: dbemail,
 		House: houseString,

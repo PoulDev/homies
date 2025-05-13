@@ -4,9 +4,9 @@ import (
 	"log"
 
 	"github.com/PoulDev/roommates-api/config"
+	"github.com/PoulDev/roommates-api/pkg/avatar"
 	"github.com/PoulDev/roommates-api/pkg/db"
 	"github.com/PoulDev/roommates-api/routes"
-	"github.com/PoulDev/roommates-api/pkg/avatar"
 
 	"github.com/gin-gonic/gin"
 )

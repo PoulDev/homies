@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"time"
 	"errors"
+	"time"
 
 	"github.com/PoulDev/roommates-api/config"
 	"github.com/golang-jwt/jwt"

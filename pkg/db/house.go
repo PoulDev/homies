@@ -6,37 +6,33 @@ import (
 
 type House struct {
 	Name string
-	Owner string
 	Members []string
 }
 
-
-func NewHouse(name string, owner string) (string, error) {
-	userRes, err := db.Exec(`
-		INSERT INTO houses (name, owner_id)
-		VALUES (?, ?)`,
-		name, owner,
+func NewHouse(name string) (string, error) {
+	houseRes, err := db.Exec(`
+		INSERT INTO houses (name)
+		VALUES (?)`, name,
 	)
 	if err != nil {
 		return "", err
 	}
 
-	userId, err := userRes.LastInsertId()
+	houseId, err := houseRes.LastInsertId()
 	if err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf("%d", userId), nil;
+	return fmt.Sprintf("%d", houseId), nil;
 }
 
-// ** Mai utilizzata, (forse) non necessaria
+// ** Mai utilizzata, potrebbe essere non necessaria
 func GetHouse(house string) (House, error) {
 	var (
 		name string
-		owner_id int
 	)
 
-	err := db.QueryRow("SELECT name, owner_id FROM houses WHERE id = ?", house).Scan(&name, &owner_id)
+	err := db.QueryRow("SELECT name FROM houses WHERE id = ?", house).Scan(&name)
 
 	if (err != nil) {
 		return House{}, err
@@ -44,7 +40,6 @@ func GetHouse(house string) (House, error) {
 
 	return House{
 		Name: name,
-		Owner: fmt.Sprintf("%d", owner_id),
 	}, nil;
 }
 
