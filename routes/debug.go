@@ -5,8 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// TODO: only admins can access this.
-
 func checkDatabase(c *gin.Context) {
     err := db.CheckConnection()
 

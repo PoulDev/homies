@@ -20,7 +20,6 @@ type User struct {
 }
 
 // TODO: Controllare i campi
-// TODO: Database register & login
 
 func authRegister(c *gin.Context) {
 	var user User;
