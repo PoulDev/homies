@@ -50,5 +50,5 @@ func getEnv(key string) (string, error) {
     if value, exists := os.LookupEnv(key); exists && value != "" {
         return value, nil
     }
-	return "", fmt.Errorf("%s env variable is not present\n", key);
+	return "", fmt.Errorf("%s env variable is not present", key);
 }

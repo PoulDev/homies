@@ -79,6 +79,11 @@ func authLogin(c *gin.Context) {
 		"exp": time.Now().UTC().Add(time.Hour * 24 * 7 * 3).Unix(),
 	})
 
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(200, gin.H{
 		"name": dbuser.Username, 
 		"email": dbuser.Email,

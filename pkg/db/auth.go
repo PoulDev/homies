@@ -71,7 +71,7 @@ func Login(email string, password string) (User, error) {
 	}
 
 	if (!auth.CheckPassword(password, pwdHash, pwdSalt)) {
-		return User{}, errors.New("Password mismatch");
+		return User{}, errors.New("password mismatch");
 	}
 
 	var houseString string;

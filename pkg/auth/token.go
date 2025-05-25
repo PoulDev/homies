@@ -21,7 +21,7 @@ func GenToken(claims jwt.MapClaims) (string, error) {
 
 
 func CheckToken(tokenString string) (jwt.MapClaims, error) {
-    token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+    token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
 		return config.JWTSecret, nil
     })
 
@@ -30,7 +30,7 @@ func CheckToken(tokenString string) (jwt.MapClaims, error) {
 	}
 
 	if (!token.Valid) {
-		return jwt.MapClaims{}, errors.New("Invalid Token")
+		return jwt.MapClaims{}, errors.New("invalid token")
 	}
 
     if claims, ok := token.Claims.(jwt.MapClaims); ok {
@@ -43,5 +43,5 @@ func CheckToken(tokenString string) (jwt.MapClaims, error) {
         return claims, nil
     }
 
-    return jwt.MapClaims{}, errors.New("Failed to get Claims(??)");
+    return jwt.MapClaims{}, errors.New("failed to get claims(??)");
 }
