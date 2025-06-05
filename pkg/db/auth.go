@@ -41,12 +41,21 @@ func Register(email string, username string, password string, avatar avatar.Avat
 	}
 
 	userId := uuid.New();
-
 	_, err = db.Exec(`
 		INSERT INTO users (id, name, email, pwd_hash, pwd_salt, avatar)
 		VALUES (?, ?, ?, ?, ?, ?)`,
 		UUID2Bytes(userId), username, email, hash, salt, avatarId,
 	)
+	if err != nil {
+		return "", err
+	}
+
+	err = NewList(userId.String(), "shopping");
+	if err != nil {
+		return "", err
+	}
+
+	err = NewList(userId.String(), "todo");
 	if err != nil {
 		return "", err
 	}

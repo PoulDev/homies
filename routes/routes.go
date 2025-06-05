@@ -22,9 +22,11 @@ func SetupRoutes(router *gin.Engine) {
 	avatarRoutes.Use(middlewares.AuthMiddleware)
 	avatarRoutes.GET("/:id", getAvatar)
 
-	cartRoutes := router.Group("/cart")
+	cartRoutes := router.Group("/lists")
 	cartRoutes.Use(middlewares.AuthMiddleware)
-	cartRoutes.GET("/", myShoppingCart)
+	cartRoutes.GET("/", getLists)
+	cartRoutes.GET("/:id/", getItems)
+	cartRoutes.PUT("/:id/", newItem)
 
 	debugRoutes := router.Group("/debug")
 	debugRoutes.Use(middlewares.AuthMiddleware, middlewares.AdminMiddleware);
