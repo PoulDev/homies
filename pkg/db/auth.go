@@ -28,7 +28,15 @@ func Register(email string, username string, password string, avatar avatar.Avat
 
     tx, err := db.Begin()
     if err != nil {return "", err}
-    defer deferRollback(tx, err)
+    defer func (){
+		if p := recover(); p != nil {
+			tx.Rollback()
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
 
 	avatarRes, err := tx.Exec(`
 		INSERT INTO avatars (

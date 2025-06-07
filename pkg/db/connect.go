@@ -1,8 +1,8 @@
 package db
 
 import (
-	"fmt"
 	"database/sql"
+	"fmt"
 
 	"github.com/PoulDev/roommates-api/config"
 	_ "github.com/go-sql-driver/mysql"
@@ -17,16 +17,6 @@ type Execer interface {
     Exec(query string, args ...any) (sql.Result, error)
     Query(query string, args ...any) (*sql.Rows, error)
     QueryRow(query string, args ...any) *sql.Row
-}
-
-func deferRollback(tx *sql.Tx, err error) {
-	if p := recover(); p != nil {
-		tx.Rollback()
-	} else if err != nil {
-		tx.Rollback()
-	} else {
-		err = tx.Commit()
-	}
 }
 
 func ConnectDatabase() error {

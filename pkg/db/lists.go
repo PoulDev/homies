@@ -108,17 +108,12 @@ func NewItemEx(exec Execer, text string, listId string, authorId string) error {
 	a_id, err := UUIDString2Bytes(authorId)
 	if err != nil {return err}
 
-	tx, err := db.Begin()
-	if err != nil {return err}
-
-    defer deferRollback(tx, err)
-
-	_, err = tx.Exec(`UPDATE lists SET items = items + 1 WHERE id = ?`, l_id)
+	_, err = exec.Exec(`UPDATE lists SET items = items + 1 WHERE id = ?`, l_id)
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.Exec(`
+	_, err = exec.Exec(`
 		INSERT INTO todos (text, list_id, author)
 		VALUES (?, ?, ?)`, text, l_id, a_id)
 	if err != nil {
