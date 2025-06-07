@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+
 func main() {
 	log.Println(avatar.RandAvatar());
 	err := config.LoadConfig();
