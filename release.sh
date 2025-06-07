@@ -9,6 +9,5 @@ read commitmsg
 git add .
 git tag $tag
 git commit -m "$commitmsg"
-git push origin main
-git push origin $tag
+git push --tags
 
