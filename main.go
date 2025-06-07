@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/PoulDev/roommates-api/config"
@@ -29,7 +30,7 @@ func main() {
 
 	routes.SetupRoutes(router);
 	
-	err = router.Run(":8080")
+	err = router.Run(fmt.Sprintf(":%d", config.HostPort))
 	if (err != nil) {
 		log.Println(err.Error())
 	}
