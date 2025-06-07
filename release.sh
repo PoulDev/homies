@@ -10,4 +10,6 @@ git add .
 git tag $tag
 git commit -m "$commitmsg"
 git push --tags
+git push
+
 
