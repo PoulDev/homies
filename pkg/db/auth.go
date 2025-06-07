@@ -18,6 +18,7 @@ type User struct {
 	Avatar string
 }
 
+
 // There's no RegisterEx because Register is only available with transactions - by design
 func Register(email string, username string, password string, avatar avatar.Avatar) (string, error) {
 	hash, salt, err := auth.HashPassword(password)
