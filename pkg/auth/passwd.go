@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	iterations = uint32(1<<8)
-	memory = uint32(1<<14)
+	iterations = uint32(1<<4)
+	memory = uint32(1<<12)
 	threads = uint8(2)
-	length = uint32(64) // old: 32
+	length = uint32(64)
 )
 
 func HashPassword(password string) ([]byte, []byte, error) {
