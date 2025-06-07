@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -14,6 +15,7 @@ var (
     DBPassword string
     DBName     string
     JWTSecret  []byte
+	HostPort   int
 )
 
 func LoadConfig() error {
@@ -35,7 +37,7 @@ func LoadConfig() error {
 		DBPassword, err = getEnv("DB_PASSWORD");
 		if (err != nil) {DBPassword = "none"}
 	}
-    
+
 	DBName, err = getEnv("DB_NAME");
 	if (err != nil) {return err}
 	
@@ -43,6 +45,12 @@ func LoadConfig() error {
 	if (err != nil) {return err}
 	JWTSecret = []byte(jwtSecretString)
 	
+	port_str, err := getEnv("PORT");
+	if (err != nil) {return err}
+
+	HostPort, err = strconv.Atoi(port_str);
+	if (err != nil) {return err}
+
 	return nil;
 }
 
