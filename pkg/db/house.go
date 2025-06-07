@@ -9,8 +9,8 @@ type House struct {
 	Members []string
 }
 
-func NewHouse(name string) (string, error) {
-	houseRes, err := db.Exec(`
+func NewHouseEx(exec Execer, name string) (string, error) {
+	houseRes, err := exec.Exec(`
 		INSERT INTO houses (name)
 		VALUES (?)`, name,
 	)
@@ -26,13 +26,18 @@ func NewHouse(name string) (string, error) {
 	return fmt.Sprintf("%d", houseId), nil;
 }
 
+func NewHouse(name string) (string, error) {
+	return NewHouseEx(db, name)
+}
+
+
 // ** Mai utilizzata, potrebbe essere non necessaria
-func GetHouse(house string) (House, error) {
+func GetHouseEx(exec Execer, house string) (House, error) {
 	var (
 		name string
 	)
 
-	err := db.QueryRow("SELECT name FROM houses WHERE id = ?", house).Scan(&name)
+	err := exec.QueryRow("SELECT name FROM houses WHERE id = ?", house).Scan(&name)
 
 	if (err != nil) {
 		return House{}, err
@@ -43,4 +48,6 @@ func GetHouse(house string) (House, error) {
 	}, nil;
 }
 
-
+func GetHouse(house string) (House, error) {
+	return GetHouseEx(db, house)
+}

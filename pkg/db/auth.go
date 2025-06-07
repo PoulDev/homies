@@ -18,13 +18,18 @@ type User struct {
 	Avatar string
 }
 
+// There's no RegisterEx because Register is only available with transactions - by design
 func Register(email string, username string, password string, avatar avatar.Avatar) (string, error) {
 	hash, salt, err := auth.HashPassword(password)
 	if err != nil {
 		return "", err
 	}
 
-	avatarRes, err := db.Exec(`
+    tx, err := db.Begin()
+    if err != nil {return "", err}
+    defer deferRollback(tx, err)
+
+	avatarRes, err := tx.Exec(`
 		INSERT INTO avatars (
 			bg_color, face_color, face_x, face_y,
 			left_eye_x, left_eye_y, right_eye_x, right_eye_y, bezier
@@ -41,7 +46,7 @@ func Register(email string, username string, password string, avatar avatar.Avat
 	}
 
 	userId := uuid.New();
-	_, err = db.Exec(`
+	_, err = tx.Exec(`
 		INSERT INTO users (id, name, email, pwd_hash, pwd_salt, avatar)
 		VALUES (?, ?, ?, ?, ?, ?)`,
 		UUID2Bytes(userId), username, email, hash, salt, avatarId,
@@ -50,12 +55,12 @@ func Register(email string, username string, password string, avatar avatar.Avat
 		return "", err
 	}
 
-	err = NewList(userId.String(), "shopping");
+	err = NewListEx(tx, userId.String(), "shopping");
 	if err != nil {
 		return "", err
 	}
 
-	err = NewList(userId.String(), "todo");
+	err = NewListEx(tx, userId.String(), "todo");
 	if err != nil {
 		return "", err
 	}
@@ -64,7 +69,7 @@ func Register(email string, username string, password string, avatar avatar.Avat
 }
 
 
-func Login(email string, password string) (User, error) {
+func LoginEx(exec Execer, email string, password string) (User, error) {
 	var (
 		ID []byte
 		username string
@@ -74,7 +79,7 @@ func Login(email string, password string) (User, error) {
 		pwdSalt []byte
 	)
 
-	err := db.QueryRow("SELECT id, name, email, house, pwd_hash, pwd_salt FROM users WHERE email = ?", email).Scan(&ID, &username, &dbemail, &house, &pwdHash, &pwdSalt)
+	err := exec.QueryRow("SELECT id, name, email, house, pwd_hash, pwd_salt FROM users WHERE email = ?", email).Scan(&ID, &username, &dbemail, &house, &pwdHash, &pwdSalt)
 	if (err != nil) {
 		return User{}, err;
 	}
@@ -101,4 +106,8 @@ func Login(email string, password string) (User, error) {
 		Email: dbemail,
 		House: houseString,
 	}, nil;
+}
+
+func Login(email string, password string) (User, error) {
+	return LoginEx(db, email, password)
 }

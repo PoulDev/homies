@@ -16,11 +16,11 @@ type Item struct {
 	Author string	`json:"author"`
 }
 
-func NewList(userId string, name string) error {
+func NewListEx(exec Execer, userId string, name string) error {
 	b_id, err := UUIDString2Bytes(userId);
 	if (err != nil) {return err;}
 
-	_, err = db.Exec(`
+	_, err = exec.Exec(`
 		INSERT INTO lists (user_id, name)
 		VALUES (?, ?)`,
 		b_id, name,
@@ -30,12 +30,18 @@ func NewList(userId string, name string) error {
 	return nil;
 }
 
-func GetLists(userId string) ([]List, error) {
+func NewList(userId string, name string) error {
+	return NewListEx(db, userId, name)
+}
+
+func GetListsEx(exec Execer, userId string) ([]List, error) {
 	b_id, err := UUIDString2Bytes(userId)
 	if (err != nil) { return nil, err; }
 
-	rows, err := db.Query(`SELECT id, name FROM lists WHERE user_id = ?`, b_id);
+	rows, err := exec.Query(`SELECT id, name FROM lists WHERE user_id = ?`, b_id);
 	defer rows.Close()
+
+	if (err != nil) {return nil, err}
 
 	var lists []List;
 	for rows.Next() {
@@ -56,11 +62,15 @@ func GetLists(userId string) ([]List, error) {
 	return lists, nil;
 }
 
-func GetItems(listId string) ([]Item, error) {
+func GetLists(userId string) ([]List, error) {
+	return GetListsEx(db, userId)
+}
+
+func GetItemsEx(exec Execer, listId string) ([]Item, error) {
 	b_id, err := strconv.Atoi(listId)
 	if (err != nil) { return nil, err; }
 
-	rows, err := db.Query(`SELECT text, completed, author FROM todos WHERE list_id = ?`, b_id);
+	rows, err := exec.Query(`SELECT text, completed, author FROM todos WHERE list_id = ?`, b_id);
 	defer rows.Close()
 
 	if err != nil {return nil, err;}
@@ -86,23 +96,38 @@ func GetItems(listId string) ([]Item, error) {
 	return items, nil;
 }
 
-func NewItem(text string, listId string, authorId string) error {
-	l_id, err := strconv.Atoi(listId)
-	if (err != nil) { return err }
-
-	a_id, err := UUIDString2Bytes(authorId)
-	if (err != nil) { return err }
-
-	_, err = db.Exec(
-		`UPDATE lists SET items = items + 1 WHERE id = ?`, l_id);
-	if (err != nil) { return err }
-
-	_, err = db.Exec(
-		`INSERT INTO todos (text, list_id, author)
-		VALUES (?, ?, ?)`, text, l_id, a_id);
-	if (err != nil) { return err }
-
-	return nil;
+func GetItems(listId string) ([]Item, error) {
+	return GetItemsEx(db, listId)
 }
 
 
+func NewItemEx(exec Execer, text string, listId string, authorId string) error {
+	l_id, err := strconv.Atoi(listId)
+	if err != nil {return err}
+
+	a_id, err := UUIDString2Bytes(authorId)
+	if err != nil {return err}
+
+	tx, err := db.Begin()
+	if err != nil {return err}
+
+    defer deferRollback(tx, err)
+
+	_, err = tx.Exec(`UPDATE lists SET items = items + 1 WHERE id = ?`, l_id)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`
+		INSERT INTO todos (text, list_id, author)
+		VALUES (?, ?, ?)`, text, l_id, a_id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func NewItem(text string, listId string, authorId string) error {
+	return NewItemEx(db, text, listId, authorId)
+}
