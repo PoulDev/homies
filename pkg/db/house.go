@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/PoulDev/roommates-api/pkg/logger"
 	"fmt"
 )
 
@@ -15,12 +16,14 @@ func NewHouseEx(exec Execer, name string) (string, error) {
 		VALUES (?)`, name,
 	)
 	if err != nil {
-		return "", err
+		logger.Logger.Error("house insert error", "err", err.Error())
+		return "", fmt.Errorf("Internal error, please try again later")
 	}
 
 	houseId, err := houseRes.LastInsertId()
 	if err != nil {
-		return "", err
+		logger.Logger.Error("house ID retrival error", "err", err.Error())
+		return "", fmt.Errorf("Internal error, please try again later")
 	}
 
 	return fmt.Sprintf("%d", houseId), nil;
@@ -38,9 +41,9 @@ func GetHouseEx(exec Execer, house string) (House, error) {
 	)
 
 	err := exec.QueryRow("SELECT name FROM houses WHERE id = ?", house).Scan(&name)
-
 	if (err != nil) {
-		return House{}, err
+		logger.Logger.Error("house get error", "err", err.Error())
+		return House{}, fmt.Errorf("Internal error, please try again later")
 	}
 
 	return House{

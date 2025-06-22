@@ -1,8 +1,11 @@
 package db
 
 import (
+	"github.com/PoulDev/roommates-api/pkg/logger"
+
 	"strconv"
 	"log"
+	"fmt"
 )
 
 type List struct {
@@ -41,7 +44,10 @@ func GetListsEx(exec Execer, userId string) ([]List, error) {
 	rows, err := exec.Query(`SELECT id, name FROM lists WHERE user_id = ?`, b_id);
 	defer rows.Close()
 
-	if (err != nil) {return nil, err}
+	if (err != nil) {
+		logger.Logger.Error("list get error", "err", err.Error())
+		return nil, fmt.Errorf("Internal error, please try again later")
+	}
 
 	var lists []List;
 	for rows.Next() {
@@ -49,14 +55,16 @@ func GetListsEx(exec Execer, userId string) ([]List, error) {
 		var id uint;
 
 		if err := rows.Scan(&id, &list.Name); err != nil {
-            return nil, err
+            logger.Logger.Error("list get error", "err", err.Error())
+			return nil, fmt.Errorf("Internal error, please try again later")
         }
 		list.Id = strconv.FormatUint(uint64(id), 10);
 		lists = append(lists, list)
 	}
 
     if err := rows.Err(); err != nil {
-        return nil, err
+		logger.Logger.Error("list get error", "err", err.Error())
+		return nil, fmt.Errorf("Internal error, please try again later")
     }
 
 	return lists, nil;
@@ -68,12 +76,18 @@ func GetLists(userId string) ([]List, error) {
 
 func GetItemsEx(exec Execer, listId string) ([]Item, error) {
 	b_id, err := strconv.Atoi(listId)
-	if (err != nil) { return nil, err; }
+	if (err != nil) { 
+		logger.Logger.Error("list ID atoi error", "err", err.Error(), "listId", listId)
+		return nil, fmt.Errorf("There's a problem with this list, please try again later")
+	}
 
 	rows, err := exec.Query(`SELECT text, completed, author FROM todos WHERE list_id = ?`, b_id);
 	defer rows.Close()
 
-	if err != nil {return nil, err;}
+	if err != nil {
+		logger.Logger.Error("list DB select error", "err", err.Error(), "listId", listId)
+		return nil, fmt.Errorf("Internal error, please try again later")
+	}
 
 	var items []Item;
 	for rows.Next() {
@@ -81,17 +95,24 @@ func GetItemsEx(exec Execer, listId string) ([]Item, error) {
 		var author []byte;
 
 		if err := rows.Scan(&item.Text, &item.Completed, &author); err != nil {
-			return nil, err
+			logger.Logger.Error("list row scan error", "err", err.Error(), "listId", listId)
+			return nil, fmt.Errorf("There's a problem with your list, please try again later")
 		}
 		log.Println(item.Text)
 		item.Author, err = UUIDBytes2String(author);
 
-		if (err != nil) {return nil, err}
+		if (err != nil) {
+			logger.Logger.Error("list UUIDBytes2String error", "err", err.Error(), "listId", listId)
+			return nil, fmt.Errorf("There's a problem with your list, please try again later")
+		}
 
 		items = append(items, item)
 	}
 
-	if err := rows.Err(); err != nil {return nil, err}
+	if err := rows.Err(); err != nil {
+		logger.Logger.Error("list rows error", "err", err.Error(), "listId", listId)
+		return nil, fmt.Errorf("There's a problem with your list, please try again later")
+	}
 
 	return items, nil;
 }
@@ -103,21 +124,29 @@ func GetItems(listId string) ([]Item, error) {
 
 func NewItemEx(exec Execer, text string, listId string, authorId string) error {
 	l_id, err := strconv.Atoi(listId)
-	if err != nil {return err}
+	if err != nil {
+		logger.Logger.Error("list ID atoi error", "err", err.Error(), "listId", listId)
+		return fmt.Errorf("There's a problem with your list, please try again later")
+	}
 
 	a_id, err := UUIDString2Bytes(authorId)
-	if err != nil {return err}
+	if err != nil {
+		logger.Logger.Error("list UUIDString2Bytes error", "err", err.Error(), "listId", listId)
+		return fmt.Errorf("There's a problem with your list, please try again later")
+	}
 
 	_, err = exec.Exec(`UPDATE lists SET items = items + 1 WHERE id = ?`, l_id)
 	if err != nil {
-		return err
+		logger.Logger.Error("list update error", "err", err.Error(), "listId", listId)
+		return fmt.Errorf("There's a problem with updating your list, please try again later")
 	}
 
 	_, err = exec.Exec(`
 		INSERT INTO todos (text, list_id, author)
 		VALUES (?, ?, ?)`, text, l_id, a_id)
 	if err != nil {
-		return err
+		logger.Logger.Error("list insert error", "err", err.Error(), "listId", listId)
+		return fmt.Errorf("There's a problem with updating your list, please try again later")
 	}
 
 	return nil

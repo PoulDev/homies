@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/PoulDev/roommates-api/pkg/db"
+	"github.com/PoulDev/roommates-api/pkg/checks"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
@@ -19,7 +20,13 @@ func createHouse(c *gin.Context) {
 	var house House;
 	err := c.ShouldBind(&house)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid Data!"})
+		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
+		return
+	}
+
+	err = checks.CheckHouseName(house.Name)
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 

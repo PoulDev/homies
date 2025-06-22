@@ -1,21 +1,25 @@
 package checks
 
-func CheckPassword(password string) string {
+import (
+	"fmt"
+)
+
+func CheckPassword(password string) error {
 	if (len(password) <= 6) {
-		return "Your password must be at least 6 characters long!";
+		return fmt.Errorf("Your password must be at least 6 characters long!");
 	} else if (len(password) >= 100) {
-		return "Your password is too long! max 100 characters.";
+		return fmt.Errorf("Your password is too long! max 100 characters.");
 	}
 
-	return ""
+	return nil;
 }
 
-func CheckUsername(username string) string {
+func CheckUsername(username string) error {
 	if (len(username) <= 3) {
-		return "Your username is too short!"
+		return fmt.Errorf("Your username must be at least 3 characters long!");
 	} else if (len(username) >= 12) {
-		return "Your username is too long!"
+		return fmt.Errorf("Your username is too long! max 12 characters.");
 	}
 
-	return ""
+	return nil
 }

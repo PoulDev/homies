@@ -7,7 +7,9 @@ import (
 
 	"github.com/PoulDev/roommates-api/pkg/auth"
 	"github.com/PoulDev/roommates-api/pkg/avatar"
+	"github.com/PoulDev/roommates-api/pkg/logger"
 	"github.com/google/uuid"
+	"github.com/go-sql-driver/mysql"
 )
 
 type User struct {
@@ -46,14 +48,19 @@ func Register(email string, username string, password string, avatar avatar.Avat
 		avatar.BgColor, avatar.FaceColor, avatar.FaceX, avatar.FaceY, avatar.LeX, avatar.LeY, avatar.ReX, avatar.ReY, avatar.Bezier,
 	)
 	if err != nil {
-		return "", err
+		logger.Logger.Error("avatar insert error", "err", err.Error())
+		return "", fmt.Errorf("Internal error, please try again later")
 	}
 
 	avatarId, err := avatarRes.LastInsertId()
 	if err != nil {
-		return "", err
+		logger.Logger.Error("avatar ID retrival error", "err", err.Error())
+		return "", fmt.Errorf("Internal error, please try again later")
 	}
 
+	// Creating User
+
+	var mysqlErr *mysql.MySQLError
 	userId := uuid.New();
 	_, err = tx.Exec(`
 		INSERT INTO users (id, name, email, pwd_hash, pwd_salt, avatar)
@@ -61,17 +68,27 @@ func Register(email string, username string, password string, avatar avatar.Avat
 		UUID2Bytes(userId), username, email, hash, salt, avatarId,
 	)
 	if err != nil {
-		return "", err
+		if (errors.As(err, &mysqlErr)) {
+			if (mysqlErr.Number == 1062) {
+				return "", fmt.Errorf("This email is already in use")
+			}
+		}
+		logger.Logger.Error("user insert error", "err", err.Error())
+		return "", fmt.Errorf("Internal error, please try again later")
 	}
+
+	// Creating the user's lists
 
 	err = NewListEx(tx, userId.String(), "shopping");
 	if err != nil {
-		return "", err
+		logger.Logger.Error("shopping list insert error", "err", err.Error())
+		return "", fmt.Errorf("Internal error, please try again later")
 	}
 
 	err = NewListEx(tx, userId.String(), "todo");
 	if err != nil {
-		return "", err
+		logger.Logger.Error("todo list insert error", "err", err.Error())
+		return "", fmt.Errorf("Internal error, please try again later")
 	}
 
 	return userId.String(), nil
@@ -90,11 +107,14 @@ func LoginEx(exec Execer, email string, password string) (User, error) {
 
 	err := exec.QueryRow("SELECT id, name, email, house, pwd_hash, pwd_salt FROM users WHERE email = ?", email).Scan(&ID, &username, &dbemail, &house, &pwdHash, &pwdSalt)
 	if (err != nil) {
+		if (err == sql.ErrNoRows) {
+			return User{}, fmt.Errorf("Wrong email or password")
+		}
 		return User{}, err;
 	}
 
 	if (!auth.CheckPassword(password, pwdHash, pwdSalt)) {
-		return User{}, errors.New("password mismatch");
+		return User{}, errors.New("Wrong email or password");
 	}
 
 	var houseString string;
@@ -106,7 +126,8 @@ func LoginEx(exec Execer, email string, password string) (User, error) {
 
 	uid, err := UUIDBytes2String(ID)
 	if (err != nil) {
-		return User{}, err;
+		logger.Logger.Error("UUIDBytes2String error", "err", err.Error())
+		return User{}, fmt.Errorf("there's a problem with your user, please try again later")
 	}
 
 	return User{

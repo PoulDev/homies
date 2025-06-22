@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/PoulDev/roommates-api/pkg/avatar"
+	"github.com/PoulDev/roommates-api/pkg/logger"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -20,7 +21,10 @@ func GetUserEx(exec Execer, id string) (User, error) {
 	)
 
 	b_id, err := UUIDString2Bytes(id);
-	if (err != nil) { return User{}, err; }
+	if (err != nil) {
+		logger.Logger.Error("getUser UUIDString2Bytes error", "err", err.Error(), "id", id)
+		return User{}, fmt.Errorf("There's a problem with your user, please try again later")
+	}
 
 	err = exec.QueryRow(`
 		SELECT name, email, house, avatar
@@ -28,7 +32,8 @@ func GetUserEx(exec Execer, id string) (User, error) {
 		Scan(&username, &dbemail, &house, &avatar);
 
 	if (err != nil) {
-		return User{}, err
+		logger.Logger.Error("select user error", "err", err.Error(), "id", id)
+		return User{}, fmt.Errorf("There's a problem with your user, please try again later")
 	}
 
 	houseString := "null"
@@ -52,10 +57,16 @@ func GetUser(id string) (User, error) {
 
 func ChangeHouseEx(exec Execer, user string, house string, make_owner bool) error {
 	userid, err := UUIDString2Bytes(user)
-	if (err != nil) { return err }
+	if (err != nil) { 
+		logger.Logger.Error("ChangeHouse UUIDString2Bytes error", "err", err.Error(), "user", user)
+		return fmt.Errorf("There's a problem with your user, please try again later")
+	}
 
 	houseid, err := strconv.Atoi(house)
-	if (err != nil) { return err }
+	if (err != nil) { 
+		logger.Logger.Error("ChangeHouse Atoi error", "err", err.Error(), "user", user)
+		return fmt.Errorf("There's a problem with your house, please try again later")
+	}
 
 	if (make_owner) {
 		_, err = exec.Exec("UPDATE users SET house = ?, is_owner = TRUE WHERE id = ?", houseid, userid)
@@ -63,9 +74,10 @@ func ChangeHouseEx(exec Execer, user string, house string, make_owner bool) erro
 		_, err = exec.Exec("UPDATE users SET house = ? WHERE id = ?", houseid, userid)
 	}
 
-	log.Println("Making admin", user, userid)
-
-	if (err != nil) { return err }
+	if (err != nil) {
+		logger.Logger.Error("ChangeHouse update error", "err", err.Error(), "user", user)
+		return fmt.Errorf("Internal error, please try again later")
+	}
 
 	return nil;
 }
@@ -77,10 +89,16 @@ func ChangeHouse(user string, house string, make_owner bool) error {
 
 func MakeHouseOwnerEx(exec Execer, user string, owner bool) error {
 	userid, err := UUIDString2Bytes(user)
-	if (err != nil) { return err }
+	if (err != nil) {
+		logger.Logger.Error("MakeHouseOwner UUIDString2Bytes error", "err", err.Error(), "user", user)
+		return fmt.Errorf("There's a problem with your user, please try again later")
+	}
 
 	_, err = exec.Exec("UPDATE users SET is_owner = ? WHERE id = ?", owner, userid)
-	if (err != nil) { return err }
+	if (err != nil) {
+		logger.Logger.Error("MakeHouseOwner update error", "err", err.Error(), "user", user)
+		return fmt.Errorf("Internal error, please try again later")
+	}
 
 	return nil;
 }
@@ -97,24 +115,28 @@ func GetUserHouseEx(exec Execer, user string) (House, error) {
 	)
 
 	b_id, err := UUIDString2Bytes(user);
-	if (err != nil) { return House{}, err; }
+	if (err != nil) {
+		logger.Logger.Error("UUIDString2Bytes error", "err", err.Error())
+		return House{}, fmt.Errorf("There's a problem with your user, please try again later")
+	}
 
 	err = exec.QueryRow(`SELECT house FROM users WHERE id = ?`, b_id).Scan(&tmp_houseid);
 
 	if (err != nil) {
-		return House{}, err
+		logger.Logger.Error("user house ID retrival error", "err", err.Error())
+		return House{}, fmt.Errorf("Internal error, please try again later")
 	}
 
 	if (!tmp_houseid.Valid) {
-		return House{}, errors.New("User doesn't have an house")
+		return House{}, errors.New("You don't have an house")
 	} else {
 		houseid = tmp_houseid.Int64
 	}
 
 	err = exec.QueryRow("SELECT name FROM houses WHERE id = ?", houseid).Scan(&name)
-
 	if (err != nil) {
-		return House{}, err
+		logger.Logger.Error("user house name retrival error", "err", err.Error())
+		return House{}, fmt.Errorf("Internal error, please try again later")
 	}
 
 	return House{
@@ -142,10 +164,11 @@ func GetAvatarEx(exec Execer, avatarid string) (avatar.Avatar, error) {
 	err := exec.QueryRow(`
 		SELECT bg_color, face_color, face_x, face_y, left_eye_x, left_eye_y, right_eye_x, right_eye_y, bezier 
 		FROM avatars WHERE id = ?`, avatarid).
-		Scan(&bg_color, &face_color, &face_x, &face_y, &left_eye_x, &left_eye_y, &right_eye_x, &right_eye_y, &bezier);
+			Scan(&bg_color, &face_color, &face_x, &face_y, &left_eye_x, &left_eye_y, &right_eye_x, &right_eye_y, &bezier);
 	
 	if (err != nil) {
-		return avatar.Avatar{}, err;
+		logger.Logger.Error("user avatar retrival error", "err", err.Error())
+		return avatar.Avatar{}, fmt.Errorf("Internal error, please try again later")
 	}
 
 	return avatar.Avatar{

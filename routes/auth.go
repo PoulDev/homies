@@ -11,6 +11,7 @@ import (
 	"github.com/PoulDev/roommates-api/pkg/avatar"
 	"github.com/PoulDev/roommates-api/pkg/checks"
 	"github.com/PoulDev/roommates-api/pkg/db"
+	"github.com/PoulDev/roommates-api/pkg/logger"
 )
 
 type User struct {
@@ -25,21 +26,25 @@ func authRegister(c *gin.Context) {
 	var user User;
 	err := c.ShouldBind(&user)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid Data!"})
+		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
 		return
 	}
 
-	errMsg := checks.CheckUsername(user.Username)
-	if (errMsg != "") {
-		c.JSON(400, gin.H{"error": errMsg})
+	// Input Validation
+
+	err = checks.CheckUsername(user.Username)
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	errMsg = checks.CheckPassword(user.Password)
-	if (errMsg != "") {
-		c.JSON(400, gin.H{"error": errMsg})
+	err = checks.CheckPassword(user.Password)
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
+
+	// DataBase: Registering the user
 
 	uid, err := db.Register(user.Email, user.Username, user.Password, avatar.RandAvatar())
 	if (err != nil) {
@@ -47,13 +52,15 @@ func authRegister(c *gin.Context) {
 		return
 	}
 
+	// JWT: Generating the token
+
 	tokenString, err := auth.GenToken(jwt.MapClaims{
 		"uid": uid,
 		"exp": time.Now().UTC().Add(time.Hour * 24 * 21).Unix(),
 	})
 	if (err != nil) {
-		log.Println("JWT ERROR: ", err.Error())
-		c.JSON(400, gin.H{"error": "JWT error"})
+		logger.Logger.Error("JWT error", "err", err.Error())
+		c.JSON(400, gin.H{"error": "Internal error, please try again later"})
 		return
 	}
 
@@ -64,7 +71,7 @@ func authLogin(c *gin.Context) {
 	var user User;
 	err := c.ShouldBind(&user)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid Data!"})
+		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
 		return
 	}
 

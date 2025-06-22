@@ -30,7 +30,7 @@ func newItem(c *gin.Context) {
 	var item ItemInput;
 	err := c.ShouldBind(&item);
 	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid Data!"})
+		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
 		return
 	}
 
