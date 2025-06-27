@@ -34,7 +34,7 @@ CREATE TABLE users (
     avatar INT UNSIGNED NOT NULL,
     is_owner BOOLEAN DEFAULT 0,
     UNIQUE INDEX name_index (name),
-    UNIQUE INDEX house_index (house),
+    INDEX house_index (house),
     CONSTRAINT link_user_avatar FOREIGN KEY (avatar) REFERENCES avatars(id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
