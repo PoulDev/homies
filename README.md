@@ -36,14 +36,14 @@ The variables to be changed are:
 
 #### 5. Build the docker image
 ```sh
-docker-compose build
+docker compose build
 ```
 
 #### 6. Run the docker image
 ```sh
-docker-compose up -d
+docker compose up -d
 ```
 
 #### 7. Done!
-The API is now running on `127.0.0.1:8080` 🥳
+The API is now running at `127.0.0.1:8080` 🥳
 

@@ -22,7 +22,7 @@ services:
       - homies-network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
+      timeout: 5s
       retries: 10
   
   # Golang API Service
@@ -39,6 +39,8 @@ services:
         condition: service_healthy
     env_file:
       - .env
+    environment:
+      GIN_MODE: release
     networks:
       - homies-network
 

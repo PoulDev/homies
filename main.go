@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/PoulDev/roommates-api/config"
-	"github.com/PoulDev/roommates-api/pkg/avatar"
 	"github.com/PoulDev/roommates-api/pkg/db"
 	"github.com/PoulDev/roommates-api/routes"
 
@@ -13,7 +12,6 @@ import (
 )
 
 func main() {
-	log.Println(avatar.RandAvatar());
 	err := config.LoadConfig();
 	if (err != nil) {
 		log.Println("Missing environment variables!")
@@ -27,12 +25,13 @@ func main() {
 	}
 
 	router := gin.Default()
-
 	routes.SetupRoutes(router)
 	
+	log.Printf("✅ Server listening on port %d\n ", config.HostPort)
 	err = router.Run(fmt.Sprintf(":%d", config.HostPort))
 	if (err != nil) {
-		log.Println(err.Error())
+		log.Println("Failed to start server!")
+		log.Panic(err.Error())
 	}
 }
 
