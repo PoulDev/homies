@@ -63,7 +63,7 @@ func Register(username string, password string, avatar avatar.Avatar) (string, e
 	userId := uuid.New();
 	_, err = tx.Exec(`
 		INSERT INTO users (id, name, pwd_hash, pwd_salt, avatar)
-		VALUES (?, ?, ?, ?, ?, ?)`,
+		VALUES (?, ?, ?, ?, ?)`,
 		UUID2Bytes(userId), username, hash, salt, avatarId,
 	)
 	if err != nil {
