@@ -26,8 +26,7 @@ CREATE TABLE avatars (
 
 CREATE TABLE users (
     id BINARY(16) NOT NULL PRIMARY KEY,
-    name VARCHAR(32) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(32) NOT NULL UNIQUE,
     house INT UNSIGNED,
     pwd_hash BINARY(64) NOT NULL,
     pwd_salt BINARY(32) NOT NULL,

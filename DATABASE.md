@@ -1,39 +1,3 @@
-# MongoDB DataBase Setup
-
-NAME: `roommates`
-
-
-**Collections**:
-    - `users`
-    - `houses`
-    - `carts`
-
-
-## users Collection
-il valore `email` deve essere unico
-il valore `house` deve essere un index altrimenti le ricerche diventano pesantissime
-```
-db.users.createIndex({ email: 1 }, { unique: true })
-db.users.createIndex({ house: 1 })
-```
-
-## houses Collection 
-il valore `owner` deve essere unico. Ogni persona puo' creare ed essere in una sola casa.
-```
-db.houses.createIndex({ owner: 1 }, { unique: true })
-```
-
-# CodeBase
-SE le funzioni del database contengono parametri ID allora avranno due versioni:
-- nomeFunzione _(privata)_
-    - gli ID vengono passati come `primitive.ObjectId`
-- NomeFunzione _(pubblica)_:
-    - Si limita a convertire i parametri ID da stringa a ObjectId, poi utilizza `nomeFunzione` _(privata)_.
-
-Solo internamente il DB utilizza tipi e metodi MongoDB.
-Questo per permettere di cambiare il database potendo riscrivere solamente `pkg/db`,
-lasciando il resto della codebase invariata.
-
 > [!WARNING]
 > Per evitare troppe richieste al database il server **NON** controlla
 > che l'uid del jwt token sia valido per ogni singola richiesta.

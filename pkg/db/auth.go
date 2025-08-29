@@ -15,14 +15,13 @@ import (
 type User struct {
 	UID string
 	Username string
-	Email string
 	House string
 	Avatar string
 }
 
 
 // There's no RegisterEx because Register is only available with transactions - by design
-func Register(email string, username string, password string, avatar avatar.Avatar) (string, error) {
+func Register(username string, password string, avatar avatar.Avatar) (string, error) {
 	hash, salt, err := auth.HashPassword(password)
 	if err != nil {
 		return "", err
@@ -63,14 +62,14 @@ func Register(email string, username string, password string, avatar avatar.Avat
 	var mysqlErr *mysql.MySQLError
 	userId := uuid.New();
 	_, err = tx.Exec(`
-		INSERT INTO users (id, name, email, pwd_hash, pwd_salt, avatar)
+		INSERT INTO users (id, name, pwd_hash, pwd_salt, avatar)
 		VALUES (?, ?, ?, ?, ?, ?)`,
-		UUID2Bytes(userId), username, email, hash, salt, avatarId,
+		UUID2Bytes(userId), username, hash, salt, avatarId,
 	)
 	if err != nil {
 		if (errors.As(err, &mysqlErr)) {
 			if (mysqlErr.Number == 1062) {
-				return "", fmt.Errorf("This email is already in use")
+				return "", fmt.Errorf("This username is already in use")
 			}
 		}
 		logger.Logger.Error("user insert error", "err", err.Error())
@@ -95,26 +94,25 @@ func Register(email string, username string, password string, avatar avatar.Avat
 }
 
 
-func LoginEx(exec Execer, email string, password string) (User, error) {
+func LoginEx(exec Execer, name string, password string) (User, error) {
 	var (
 		ID []byte
 		username string
-		dbemail string
 		house sql.NullInt64
 		pwdHash []byte
 		pwdSalt []byte
 	)
 
-	err := exec.QueryRow("SELECT id, name, email, house, pwd_hash, pwd_salt FROM users WHERE email = ?", email).Scan(&ID, &username, &dbemail, &house, &pwdHash, &pwdSalt)
+	err := exec.QueryRow("SELECT id, name, house, pwd_hash, pwd_salt FROM users WHERE name = ?", name).Scan(&ID, &username, &house, &pwdHash, &pwdSalt)
 	if (err != nil) {
 		if (err == sql.ErrNoRows) {
-			return User{}, fmt.Errorf("Wrong email or password")
+			return User{}, fmt.Errorf("Wrong username or password")
 		}
 		return User{}, err;
 	}
 
 	if (!auth.CheckPassword(password, pwdHash, pwdSalt)) {
-		return User{}, errors.New("Wrong email or password");
+		return User{}, errors.New("Wrong username or password");
 	}
 
 	var houseString string;
@@ -133,11 +131,10 @@ func LoginEx(exec Execer, email string, password string) (User, error) {
 	return User{
 		UID: uid,
 		Username: username,
-		Email: dbemail,
 		House: houseString,
 	}, nil;
 }
 
-func Login(email string, password string) (User, error) {
-	return LoginEx(db, email, password)
+func Login(name string, password string) (User, error) {
+	return LoginEx(db, name, password)
 }

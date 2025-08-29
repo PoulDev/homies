@@ -28,9 +28,13 @@ func userInfo(c *gin.Context) {
 		"avatar": user.Avatar,
 	}
 
+	/*
+	// For additional information provided if the requested user is also the user making the request
+
 	if (id_param == "me") {
-		response["email"] = user.Email
+
 	}
+	*/
 
 	c.JSON(200, response);
 }

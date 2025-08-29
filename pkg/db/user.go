@@ -14,7 +14,6 @@ import (
 func GetUserEx(exec Execer, id string) (User, error) {
 	var (
 		username string
-		dbemail string
 		avatar int64
 		house sql.NullInt64
 	)
@@ -26,9 +25,9 @@ func GetUserEx(exec Execer, id string) (User, error) {
 	}
 
 	err = exec.QueryRow(`
-		SELECT name, email, house, avatar
+		SELECT name, house, avatar
 		FROM users WHERE id = ?`, b_id).
-		Scan(&username, &dbemail, &house, &avatar);
+		Scan(&username, &house, &avatar);
 
 	if (err != nil) {
 		logger.Logger.Error("select user error", "err", err.Error(), "id", id)
@@ -44,7 +43,6 @@ func GetUserEx(exec Execer, id string) (User, error) {
 		UID: id,
 		Username: username,
 		Avatar: fmt.Sprintf("%d", avatar),
-		Email: dbemail,
 		House: houseString,
 	}, nil;
 }

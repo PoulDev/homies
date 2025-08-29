@@ -15,7 +15,6 @@ import (
 )
 
 type User struct {
-	Email string `json:"email" binding:"required,email"` // REQUIRED
 	Password string `json:"pwd" binding:"required"` // REQUIRED
 	Username string `json:"name"` // solo in register
 }
@@ -46,7 +45,7 @@ func authRegister(c *gin.Context) {
 
 	// DataBase: Registering the user
 
-	uid, err := db.Register(user.Email, user.Username, user.Password, avatar.RandAvatar())
+	uid, err := db.Register(user.Username, user.Password, avatar.RandAvatar())
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -75,7 +74,7 @@ func authLogin(c *gin.Context) {
 		return
 	}
 
-	dbuser, err := db.Login(user.Email, user.Password)
+	dbuser, err := db.Login(user.Username, user.Password)
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -93,7 +92,6 @@ func authLogin(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"name": dbuser.Username, 
-		"email": dbuser.Email,
 		"token": tokenString,
 	});
 }
