@@ -23,7 +23,7 @@ func userInfo(c *gin.Context) {
 	}
 
 	response := gin.H{
-		"username": user.Username,
+		"name": user.Username,
 		"house": user.House,
 		"avatar": user.Avatar,
 	}
