@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/PoulDev/roommates-api/pkg/auth"
-	"github.com/PoulDev/roommates-api/pkg/avatar"
-	"github.com/PoulDev/roommates-api/pkg/logger"
+	"github.com/PoulDev/roommates-api/pkg/homies/auth"
+	"github.com/PoulDev/roommates-api/pkg/homies/avatar"
+	"github.com/PoulDev/roommates-api/internal/homies/logger"
 	"github.com/google/uuid"
 	"github.com/go-sql-driver/mysql"
 )

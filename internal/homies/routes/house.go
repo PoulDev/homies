@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/PoulDev/roommates-api/pkg/db"
-	"github.com/PoulDev/roommates-api/pkg/checks"
+	"github.com/PoulDev/roommates-api/internal/homies/db"
+	"github.com/PoulDev/roommates-api/internal/homies/checks"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )

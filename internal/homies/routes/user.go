@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/PoulDev/roommates-api/pkg/db"
+	"github.com/PoulDev/roommates-api/internal/homies/db"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )

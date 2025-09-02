@@ -2,7 +2,7 @@ package middlewares;
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/PoulDev/roommates-api/pkg/auth"
+	"github.com/PoulDev/roommates-api/pkg/homies/auth"
 	"net/http"
 )
 

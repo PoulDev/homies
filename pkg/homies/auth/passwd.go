@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	iterations = uint32(1<<4)
-	memory = uint32(1<<12)
+	iterations = uint32(4)
+	memory = uint32(64*512)
 	threads = uint8(2)
 	length = uint32(64)
 )

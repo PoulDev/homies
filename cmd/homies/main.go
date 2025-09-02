@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/PoulDev/roommates-api/config"
-	"github.com/PoulDev/roommates-api/pkg/db"
-	"github.com/PoulDev/roommates-api/routes"
+	"github.com/PoulDev/roommates-api/internal/homies/config"
+	"github.com/PoulDev/roommates-api/internal/homies/db"
+	"github.com/PoulDev/roommates-api/internal/homies/routes"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,7 +27,7 @@ func main() {
 	router := gin.Default()
 	routes.SetupRoutes(router)
 	
-	log.Printf("✅ Server listening on port %d\n ", config.HostPort)
+	log.Printf("🦜 Server listening on port %d\n ", config.HostPort)
 	err = router.Run(fmt.Sprintf(":%d", config.HostPort))
 	if (err != nil) {
 		log.Println("Failed to start server!")

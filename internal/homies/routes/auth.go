@@ -7,11 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 
-	"github.com/PoulDev/roommates-api/pkg/auth"
-	"github.com/PoulDev/roommates-api/pkg/avatar"
-	"github.com/PoulDev/roommates-api/pkg/checks"
-	"github.com/PoulDev/roommates-api/pkg/db"
-	"github.com/PoulDev/roommates-api/pkg/logger"
+	"github.com/PoulDev/roommates-api/pkg/homies/auth"
+	"github.com/PoulDev/roommates-api/pkg/homies/avatar"
+	"github.com/PoulDev/roommates-api/internal/homies/checks"
+	"github.com/PoulDev/roommates-api/internal/homies/db"
+	"github.com/PoulDev/roommates-api/internal/homies/logger"
 )
 
 type User struct {
