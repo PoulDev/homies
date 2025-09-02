@@ -26,7 +26,7 @@ func main() {
 
 	router := gin.Default()
 	routes.SetupRoutes(router)
-	
+
 	log.Printf("🦜 Server listening on port %d\n ", config.HostPort)
 	err = router.Run(fmt.Sprintf(":%d", config.HostPort))
 	if (err != nil) {

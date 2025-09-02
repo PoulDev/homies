@@ -2,46 +2,31 @@ package db
 
 import (
 	"github.com/PoulDev/homies/internal/homies/logger"
+	"github.com/PoulDev/homies/internal/homies/models"
 
 	"strconv"
 	"log"
 	"fmt"
 )
 
-type List struct {
-	Name string		`json:"name"`
-	Id string		`json:"id"`
-}
-
-type Item struct {
-	Text string 	`json:"text"`
-	Completed bool	`json:"completed"`
-	Author string	`json:"author"`
-}
-
-func NewListEx(exec Execer, userId string, name string) error {
-	b_id, err := UUIDString2Bytes(userId);
-	if (err != nil) {return err;}
-
-	_, err = exec.Exec(`
-		INSERT INTO lists (user_id, name)
+func NewListEx(exec Execer, houseId int64, name string) error {
+	_, err := exec.Exec(`
+		INSERT INTO lists (house_id, name)
 		VALUES (?, ?)`,
-		b_id, name,
+		houseId, name,
 	)
 	if err != nil {return err;}
 
 	return nil;
 }
 
-func NewList(userId string, name string) error {
-	return NewListEx(db, userId, name)
+func NewList(houseId int64, name string) error {
+	return NewListEx(db, houseId, name)
 }
 
-func GetListsEx(exec Execer, userId string) ([]List, error) {
-	b_id, err := UUIDString2Bytes(userId)
-	if (err != nil) { return nil, err; }
-
-	rows, err := exec.Query(`SELECT id, name FROM lists WHERE user_id = ?`, b_id);
+func GetListsEx(exec Execer, houseId int64) ([]models.List, error) {
+	logger.Logger.Info("get lists", "houseId", houseId)
+	rows, err := exec.Query(`SELECT id, name FROM lists WHERE house_id = ?`, houseId);
 	defer rows.Close()
 
 	if (err != nil) {
@@ -49,9 +34,9 @@ func GetListsEx(exec Execer, userId string) ([]List, error) {
 		return nil, fmt.Errorf("Internal error, please try again later")
 	}
 
-	var lists []List;
+	var lists []models.List;
 	for rows.Next() {
-		var list List;
+		var list models.List;
 		var id uint;
 
 		if err := rows.Scan(&id, &list.Name); err != nil {
@@ -70,18 +55,30 @@ func GetListsEx(exec Execer, userId string) ([]List, error) {
 	return lists, nil;
 }
 
-func GetLists(userId string) ([]List, error) {
-	return GetListsEx(db, userId)
+func GetLists(houseId int64) ([]models.List, error) {
+	return GetListsEx(db, houseId)
 }
 
-func GetItemsEx(exec Execer, listId string) ([]Item, error) {
+func GetListHID(listId string) (string, error) {
+	var houseId int64;
+	
+	err := db.QueryRow(`SELECT house_id FROM lists WHERE id = ?`, listId).Scan(&houseId);
+	if (err != nil) {
+		logger.Logger.Error("user house ID retrival error", "err", err.Error())
+		return "", fmt.Errorf("There's a problem with this list, please try again later")
+	}
+
+	return strconv.FormatInt(houseId, 10), nil;
+}
+
+func GetItemsEx(exec Execer, listId string) ([]models.Item, error) {
 	b_id, err := strconv.Atoi(listId)
 	if (err != nil) { 
 		logger.Logger.Error("list ID atoi error", "err", err.Error(), "listId", listId)
 		return nil, fmt.Errorf("There's a problem with this list, please try again later")
 	}
 
-	rows, err := exec.Query(`SELECT text, completed, author FROM todos WHERE list_id = ?`, b_id);
+	rows, err := exec.Query(`SELECT id, text, completed, author FROM todos WHERE list_id = ?`, b_id);
 	defer rows.Close()
 
 	if err != nil {
@@ -89,17 +86,19 @@ func GetItemsEx(exec Execer, listId string) ([]Item, error) {
 		return nil, fmt.Errorf("Internal error, please try again later")
 	}
 
-	var items []Item;
+	items := make([]models.Item, 0);
 	for rows.Next() {
-		var item Item;
+		var item models.Item;
+		var iid int64;
 		var author []byte;
 
-		if err := rows.Scan(&item.Text, &item.Completed, &author); err != nil {
+		if err := rows.Scan(&iid, &item.Text, &item.Completed, &author); err != nil {
 			logger.Logger.Error("list row scan error", "err", err.Error(), "listId", listId)
 			return nil, fmt.Errorf("There's a problem with your list, please try again later")
 		}
 		log.Println(item.Text)
 		item.Author, err = UUIDBytes2String(author);
+		item.Id = strconv.FormatInt(iid, 10);
 
 		if (err != nil) {
 			logger.Logger.Error("list UUIDBytes2String error", "err", err.Error(), "listId", listId)
@@ -117,7 +116,7 @@ func GetItemsEx(exec Execer, listId string) ([]Item, error) {
 	return items, nil;
 }
 
-func GetItems(listId string) ([]Item, error) {
+func GetItems(listId string) ([]models.Item, error) {
 	return GetItemsEx(db, listId)
 }
 

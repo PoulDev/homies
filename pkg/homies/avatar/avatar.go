@@ -3,24 +3,14 @@ package avatar
 import (
 	"fmt"
 	"math/rand/v2"
+
+	"github.com/PoulDev/homies/internal/homies/models"
 )
 
 type Color struct {
 	R int
 	G int
 	B int
-}
-
-type Avatar struct {
-	BgColor   string  `bson:"bgColor"`
-	FaceColor string  `bson:"faceColor"`
-	FaceX     float32 `bson:"faceX"`
-	FaceY     float32 `bson:"faceY"`
-	LeX       float32 `bson:"leX"`
-	LeY       float32 `bson:"leY"`
-	ReX       float32 `bson:"reX"`
-	ReY       float32 `bson:"reY"`
-	Bezier    string  `bson:"bezier"`
 }
 
 var colors = []Color{
@@ -57,7 +47,7 @@ func color2hex(color Color) string {
 	return fmt.Sprintf("%x%x%x", color.R, color.G, color.B);
 }
 
-func RandAvatar() Avatar {
+func RandAvatar() models.Avatar {
 	oColor := colors[rand.IntN(len(colors))];
 	RGBcolor := Color{
 		changeColor(oColor.R),
@@ -79,7 +69,7 @@ func RandAvatar() Avatar {
 		faceColor = "010101";
 	}
 
-	return Avatar{
+	return models.Avatar{
 		BgColor:   color,
 		FaceColor: faceColor,
 		FaceX:     rand.Float32()*39 + 7,

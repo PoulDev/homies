@@ -14,15 +14,23 @@ import (
 	"github.com/PoulDev/homies/internal/homies/logger"
 )
 
-type User struct {
+type JUser struct {
 	Password string `json:"pwd" binding:"required"` // REQUIRED
 	Username string `json:"name"` // solo in register
 }
 
-// TODO: Controllare i campi
+
+// Centralized between authRegister and authLogin
+func getJWT(uid string, house string) (string, error) {
+	return auth.GenToken(jwt.MapClaims{
+		"uid": uid,
+		"hid": house,
+		"exp": time.Now().UTC().Add(time.Hour * 24 * 21).Unix(),
+	})
+}
 
 func authRegister(c *gin.Context) {
-	var user User;
+	var user JUser;
 	err := c.ShouldBind(&user)
 	if err != nil {
 		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
@@ -52,11 +60,8 @@ func authRegister(c *gin.Context) {
 	}
 
 	// JWT: Generating the token
+	tokenString, err := getJWT(uid, "null")
 
-	tokenString, err := auth.GenToken(jwt.MapClaims{
-		"uid": uid,
-		"exp": time.Now().UTC().Add(time.Hour * 24 * 21).Unix(),
-	})
 	if (err != nil) {
 		logger.Logger.Error("JWT error", "err", err.Error())
 		c.JSON(400, gin.H{"error": "Internal error, please try again later"})
@@ -67,7 +72,7 @@ func authRegister(c *gin.Context) {
 }
 
 func authLogin(c *gin.Context) {
-	var user User;
+	var user JUser;
 	err := c.ShouldBind(&user)
 	if err != nil {
 		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
@@ -80,10 +85,7 @@ func authLogin(c *gin.Context) {
 		return
 	}
 
-	tokenString, err := auth.GenToken(jwt.MapClaims{
-		"uid": dbuser.UID,
-		"exp": time.Now().UTC().Add(time.Hour * 24 * 7 * 3).Unix(),
-	})
+	tokenString, err := getJWT(dbuser.UID, dbuser.House.ID)
 
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})

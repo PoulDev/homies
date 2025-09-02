@@ -12,13 +12,26 @@ type House struct {
 }
 
 func createHouse(c *gin.Context) {
+	jwtdata, _ := c.Get("data")
+
 	if (c.Param("id") != "me") {
 		c.JSON(400, gin.H{"error": "You can create houses only for yourself!"})
 		return
 	}
 
+	user, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	if user.House.ID != "null" {
+		c.JSON(400, gin.H{"error": "You already have a house!"})
+		return
+	}
+
 	var house House;
-	err := c.ShouldBind(&house)
+	err = c.ShouldBind(&house)
 	if err != nil {
 		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
 		return
@@ -29,8 +42,6 @@ func createHouse(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
-
-	jwtdata, _ := c.Get("data")
 	
 	houseid, err := db.NewHouse(house.Name)
 	if (err != nil) {
@@ -67,4 +78,8 @@ func userHouse(c *gin.Context) {
 		"name": house.Name,
 		"members": house.Members,
 	})
+}
+
+func joinHouse(c *gin.Context) {
+
 }

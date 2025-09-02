@@ -6,32 +6,32 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/PoulDev/homies/pkg/homies/avatar"
 	"github.com/PoulDev/homies/internal/homies/logger"
+	"github.com/PoulDev/homies/internal/homies/models"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func GetUserEx(exec Execer, id string) (User, error) {
+func GetUserEx(exec Execer, id string) (models.User, error) {
 	var (
 		username string
-		avatar int64
+		avatar models.Avatar
 		house sql.NullInt64
 	)
 
 	b_id, err := UUIDString2Bytes(id);
 	if (err != nil) {
 		logger.Logger.Error("getUser UUIDString2Bytes error", "err", err.Error(), "id", id)
-		return User{}, fmt.Errorf("There's a problem with your user, please try again later")
+		return models.User{}, fmt.Errorf("There's a problem with your user, please try again later")
 	}
 
 	err = exec.QueryRow(`
-		SELECT name, house, avatar
+		SELECT name, house, bg_color, face_color, face_x, face_y, left_eye_x, left_eye_y, right_eye_x, right_eye_y, bezier
 		FROM users WHERE id = ?`, b_id).
-		Scan(&username, &house, &avatar);
+		Scan(&username, &house, &avatar.BgColor, &avatar.FaceColor, &avatar.FaceX, &avatar.FaceY, &avatar.LeX, &avatar.LeY, &avatar.ReX, &avatar.ReY, &avatar.Bezier);
 
 	if (err != nil) {
 		logger.Logger.Error("select user error", "err", err.Error(), "id", id)
-		return User{}, fmt.Errorf("There's a problem with your user, please try again later")
+		return models.User{}, fmt.Errorf("There's a problem with your user, please try again later")
 	}
 
 	houseString := "null"
@@ -39,15 +39,15 @@ func GetUserEx(exec Execer, id string) (User, error) {
 		houseString = fmt.Sprintf("%d", house.Int64)
 	}
 
-	return User{
+	return models.User{
 		UID: id,
 		Username: username,
-		Avatar: fmt.Sprintf("%d", avatar),
-		House: houseString,
+		Avatar: avatar,
+		House: models.House{ID: houseString},
 	}, nil;
 }
 
-func GetUser(id string) (User, error) {
+func GetUser(id string) (models.User, error) {
 	return GetUserEx(db, id)
 }
 
@@ -104,83 +104,42 @@ func MakeHouseOwner(user string, owner bool) error {
 	return MakeHouseOwnerEx(db, user, owner)
 }
 
-func GetUserHouseEx(exec Execer, user string) (House, error) {
+func GetUserHouseEx(exec Execer, user string) (models.House, error) {
 	var (
 		tmp_houseid sql.NullInt64
 		houseid int64
-		name string
 	)
 
 	b_id, err := UUIDString2Bytes(user);
 	if (err != nil) {
 		logger.Logger.Error("UUIDString2Bytes error", "err", err.Error())
-		return House{}, fmt.Errorf("There's a problem with your user, please try again later")
+		return models.House{}, fmt.Errorf("There's a problem with your user, please try again later")
 	}
 
 	err = exec.QueryRow(`SELECT house FROM users WHERE id = ?`, b_id).Scan(&tmp_houseid);
 
 	if (err != nil) {
 		logger.Logger.Error("user house ID retrival error", "err", err.Error())
-		return House{}, fmt.Errorf("Internal error, please try again later")
+		return models.House{}, fmt.Errorf("Internal error, please try again later")
 	}
 
 	if (!tmp_houseid.Valid) {
-		return House{}, errors.New("You don't have an house")
+		return models.House{}, errors.New("You don't have an house")
 	} else {
 		houseid = tmp_houseid.Int64
 	}
+	
+	house, err := GetHouse(strconv.FormatInt(houseid, 10), b_id)
 
-	err = exec.QueryRow("SELECT name FROM houses WHERE id = ?", houseid).Scan(&name)
 	if (err != nil) {
 		logger.Logger.Error("user house name retrival error", "err", err.Error())
-		return House{}, fmt.Errorf("Internal error, please try again later")
+		return models.House{}, fmt.Errorf("Internal error, please try again later")
 	}
 
-	return House{
-		Name: name,
-	}, nil;
+	return house, nil;
 }
 
-func GetUserHouse(user string) (House, error) {
+func GetUserHouse(user string) (models.House, error) {
 	return GetUserHouseEx(db, user)
 }
 
-func GetAvatarEx(exec Execer, avatarid string) (avatar.Avatar, error) {
-	var (
-		bg_color string
-		face_color string
-		face_x float32
-		face_y float32
-		left_eye_x float32
-		left_eye_y float32
-		right_eye_x float32
-		right_eye_y float32
-		bezier string
-	)
-
-	err := exec.QueryRow(`
-		SELECT bg_color, face_color, face_x, face_y, left_eye_x, left_eye_y, right_eye_x, right_eye_y, bezier 
-		FROM avatars WHERE id = ?`, avatarid).
-			Scan(&bg_color, &face_color, &face_x, &face_y, &left_eye_x, &left_eye_y, &right_eye_x, &right_eye_y, &bezier);
-	
-	if (err != nil) {
-		logger.Logger.Error("user avatar retrival error", "err", err.Error())
-		return avatar.Avatar{}, fmt.Errorf("Internal error, please try again later")
-	}
-
-	return avatar.Avatar{
-		BgColor: bg_color,
-		FaceColor: face_color,
-		FaceX: face_x,
-		FaceY: face_y,
-		LeX: left_eye_x,
-		LeY: left_eye_y,
-		ReX: right_eye_x,
-		ReY: right_eye_y,
-		Bezier: bezier,
-	}, nil
-}
-
-func GetAvatar(avatarid string) (avatar.Avatar, error) {
-	return GetAvatarEx(db, avatarid)
-}

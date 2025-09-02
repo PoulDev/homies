@@ -2,6 +2,7 @@ package routes
 
 import (
 	"github.com/PoulDev/homies/internal/homies/db"
+	"github.com/PoulDev/homies/internal/homies/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
@@ -39,22 +40,34 @@ func userInfo(c *gin.Context) {
 	c.JSON(200, response);
 }
 
-func getAvatar(c *gin.Context) {
-	avatar, err := db.GetAvatar(c.Param("id"))
+func homeOverview(c *gin.Context) {
+	jwtdata, _ := c.Get("data")	
+
+	user, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"bg_color": avatar.BgColor,
-		"face_color": avatar.FaceColor,
-		"face_x": avatar.FaceX,
-		"face_y": avatar.FaceY,
-		"left_eye_x": avatar.LeX,
-		"left_eye_y": avatar.LeY,
-		"right_eye_x": avatar.ReX,
-		"right_eye_y": avatar.ReY,
-		"bezier": avatar.Bezier,
-	})
+	uid, err := db.UUIDString2Bytes(user.UID)
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	house, err := db.GetHouse(jwtdata.(jwt.MapClaims)["hid"].(string), uid)
+
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	user.House = house
+
+	overview := models.Overview{
+		User: user,
+		Items: make([]models.Item, 0),
+	}
+
+	c.JSON(200, overview);
 }
