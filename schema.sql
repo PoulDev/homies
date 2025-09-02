@@ -42,18 +42,18 @@ CREATE TABLE users (
         ON UPDATE CASCADE
 );
 
-CREATE TABLE lists (
+CREATE TABLE lists ( -- Homes Lists
     id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    user_id BINARY(16) NOT NULL,
+    house_id BINARY(16) NOT NULL,
     name VARCHAR(256) NOT NULL,
     items INT UNSIGNED NOT NULL DEFAULT 0,
 
-    INDEX user_id_index (user_id),
-    CONSTRAINT link_list_user FOREIGN KEY (user_id) REFERENCES users(id)
+    INDEX house_id_index (house_id),
+    CONSTRAINT link_list_house FOREIGN KEY (house_id) REFERENCES houses(id)
         ON DELETE CASCADE
 );
 
-CREATE TABLE todos (
+CREATE TABLE todos ( -- Lists Items
     id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
     list_id INT UNSIGNED NOT NULL,
     completed BOOLEAN DEFAULT FALSE NOT NULL,

@@ -11,7 +11,7 @@ COPY . .
 RUN go mod download
  
 # Builds your app with optional configuration
-RUN go build -o /homies-api-docker
+RUN go build -o /homies-api-docker ./cmd/homies/main.go
  
 # Tells Docker which network port your container listens on
 EXPOSE 8080
