@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/PoulDev/roommates-api/internal/homies/middlewares"
+	"github.com/PoulDev/homies/internal/homies/middlewares"
 	"github.com/gin-gonic/gin"
 )
 

@@ -1,4 +1,4 @@
-# roommates-api
+# homies
 rommates app rest api
 
 ## Getting Started
@@ -12,12 +12,12 @@ rommates app rest api
 
 #### 1. Clone the repo
 ```sh
-git clone https://github.com/PoulDev/roommates-api.git
+git clone https://github.com/PoulDev/homies.git
 ```
 
 #### 2. Change directory
 ```sh
-cd roommates-api
+cd homies
 ```
 
 #### 3. Change the default environment variables

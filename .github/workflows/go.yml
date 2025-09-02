@@ -28,7 +28,7 @@ jobs:
       run: go get .
 
     - name: Build
-      run: go build -o roommates-api
+      run: go build -o homies
 
     - name: Create release
       id: create_release
@@ -47,7 +47,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./roommates-api
-        asset_name: roommates-api
+        asset_path: ./homies
+        asset_name: homies
         asset_content_type: application/octet-stream
 

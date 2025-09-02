@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/PoulDev/roommates-api/internal/homies/logger"
+	"github.com/PoulDev/homies/internal/homies/logger"
 
 	"strconv"
 	"log"

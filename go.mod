@@ -1,4 +1,4 @@
-module github.com/PoulDev/roommates-api
+module github.com/PoulDev/homies
 
 go 1.24.3
 

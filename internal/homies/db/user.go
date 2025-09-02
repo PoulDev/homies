@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/PoulDev/roommates-api/pkg/homies/avatar"
-	"github.com/PoulDev/roommates-api/internal/homies/logger"
+	"github.com/PoulDev/homies/pkg/homies/avatar"
+	"github.com/PoulDev/homies/internal/homies/logger"
 	_ "github.com/go-sql-driver/mysql"
 )
 
