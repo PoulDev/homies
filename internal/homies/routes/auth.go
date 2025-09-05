@@ -85,7 +85,7 @@ func authLogin(c *gin.Context) {
 		return
 	}
 
-	tokenString, err := getJWT(dbuser.UID, dbuser.House.ID)
+	tokenString, err := getJWT(dbuser.UID, dbuser.HouseId)
 
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})

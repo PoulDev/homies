@@ -11,7 +11,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func GetUserEx(exec Execer, id string) (models.User, error) {
+func GetUserEx(exec Execer, id string) (models.DBUser, error) {
 	var (
 		username string
 		avatar models.Avatar
@@ -21,7 +21,7 @@ func GetUserEx(exec Execer, id string) (models.User, error) {
 	b_id, err := UUIDString2Bytes(id);
 	if (err != nil) {
 		logger.Logger.Error("getUser UUIDString2Bytes error", "err", err.Error(), "id", id)
-		return models.User{}, fmt.Errorf("There's a problem with your user, please try again later")
+		return models.DBUser{}, fmt.Errorf("There's a problem with your user, please try again later")
 	}
 
 	err = exec.QueryRow(`
@@ -31,7 +31,7 @@ func GetUserEx(exec Execer, id string) (models.User, error) {
 
 	if (err != nil) {
 		logger.Logger.Error("select user error", "err", err.Error(), "id", id)
-		return models.User{}, fmt.Errorf("There's a problem with your user, please try again later")
+		return models.DBUser{}, fmt.Errorf("There's a problem with your user, please try again later")
 	}
 
 	houseString := "null"
@@ -39,15 +39,17 @@ func GetUserEx(exec Execer, id string) (models.User, error) {
 		houseString = fmt.Sprintf("%d", house.Int64)
 	}
 
-	return models.User{
-		UID: id,
-		Username: username,
-		Avatar: avatar,
-		House: models.House{ID: houseString},
+	return models.DBUser{
+		User: models.User{
+			UID: id,
+			Username: username,
+			Avatar: avatar,
+		},
+		HouseId: houseString,
 	}, nil;
 }
 
-func GetUser(id string) (models.User, error) {
+func GetUser(id string) (models.DBUser, error) {
 	return GetUserEx(db, id)
 }
 
@@ -81,6 +83,18 @@ func ChangeHouseEx(exec Execer, user string, house string, make_owner bool) erro
 
 func ChangeHouse(user string, house string, make_owner bool) error {
 	return ChangeHouseEx(db, user, house, make_owner)
+}
+
+func HouseIDByInvite(invite string) (string, error) {
+	var houseid int64
+	
+	err := db.QueryRow(`SELECT id FROM houses WHERE invite = ?`, invite).Scan(&houseid)
+	if (err != nil) {
+		logger.Logger.Error("FindHouseByInvite error", "err", err.Error(), "invite", invite)
+		return "", fmt.Errorf("Internal error, please try again later")
+	}
+	
+	return strconv.FormatInt(houseid, 10), nil;
 }
 
 

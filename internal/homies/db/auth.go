@@ -51,25 +51,24 @@ func Register(username string, password string, avatar models.Avatar) (string, e
 }
 
 
-func LoginEx(exec Execer, name string, password string) (models.User, error) {
+func LoginEx(exec Execer, name string, password string) (models.DBUser, error) {
 	var (
 		ID []byte
-		username string
 		house sql.NullInt64
 		pwdHash []byte
 		pwdSalt []byte
 	)
 
-	err := exec.QueryRow("SELECT id, name, house, pwd_hash, pwd_salt FROM users WHERE name = ?", name).Scan(&ID, &username, &house, &pwdHash, &pwdSalt)
+	err := exec.QueryRow("SELECT id, house, pwd_hash, pwd_salt FROM users WHERE name = ?", name).Scan(&ID, &house, &pwdHash, &pwdSalt)
 	if (err != nil) {
 		if (err == sql.ErrNoRows) {
-			return models.User{}, fmt.Errorf("Wrong username or password")
+			return models.DBUser{}, fmt.Errorf("Wrong username or password")
 		}
-		return models.User{}, err;
+		return models.DBUser{}, err;
 	}
 
 	if (!auth.CheckPassword(password, pwdHash, pwdSalt)) {
-		return models.User{}, errors.New("Wrong username or password");
+		return models.DBUser{}, errors.New("Wrong username or password");
 	}
 
 	var houseString string;
@@ -82,16 +81,17 @@ func LoginEx(exec Execer, name string, password string) (models.User, error) {
 	uid, err := UUIDBytes2String(ID)
 	if (err != nil) {
 		logger.Logger.Error("UUIDBytes2String error", "err", err.Error())
-		return models.User{}, fmt.Errorf("there's a problem with your user, please try again later")
+		return models.DBUser{}, fmt.Errorf("there's a problem with your user, please try again later")
 	}
 
-	return models.User{
-		UID: uid,
-		Username: username,
-		House: models.House{ID: houseString},
+	return models.DBUser{
+		User: models.User{
+			UID: uid,
+		},
+		HouseId: houseString,
 	}, nil;
 }
 
-func Login(name string, password string) (models.User, error) {
+func Login(name string, password string) (models.DBUser, error) {
 	return LoginEx(db, name, password)
 }

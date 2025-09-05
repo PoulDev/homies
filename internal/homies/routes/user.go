@@ -15,6 +15,9 @@ func userInfo(c *gin.Context) {
 
 	if (id_param == "me") {
 		uid = jwtdata.(jwt.MapClaims)["uid"].(string)
+	} else { // let's avoid it for now...
+		c.JSON(400, gin.H{"error": "You can't see other people info!"})
+		return
 	}
 
 	user, err := db.GetUser(uid)
@@ -23,21 +26,11 @@ func userInfo(c *gin.Context) {
 		return
 	}
 
-	response := gin.H{
-		"name": user.Username,
-		"house": user.House,
-		"avatar": user.Avatar,
+	account := models.Account{
+		User: user.User,
 	}
 
-	/*
-	// For additional information provided if the requested user is also the user making the request
-
-	if (id_param == "me") {
-
-	}
-	*/
-
-	c.JSON(200, response);
+	c.JSON(200, account);
 }
 
 func homeOverview(c *gin.Context) {
@@ -62,10 +55,9 @@ func homeOverview(c *gin.Context) {
 		return
 	}
 
-	user.House = house
-
 	overview := models.Overview{
-		User: user,
+		User: user.User,
+		House: house,
 		Items: make([]models.Item, 0),
 	}
 

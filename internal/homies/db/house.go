@@ -26,10 +26,10 @@ func GenerateCode() (string, error) {
 	return string(code), nil
 }
 
-
-func NewHouse(name string) (string, error) {
+// Returns the house ID & invite code
+func NewHouse(name string) (string, string, error) {
     tx, err := db.Begin()
-    if err != nil {return "", err}
+    if err != nil {return "", "", err}
     defer func (){
 		if p := recover(); p != nil {
 			tx.Rollback()
@@ -46,7 +46,7 @@ func NewHouse(name string) (string, error) {
 		invite, err = GenerateCode()
 		if (err != nil) {
 			logger.Logger.Error("house insert error", "err", err.Error())
-			return "", fmt.Errorf("Internal error, please try again later")
+			return "", "", fmt.Errorf("Internal error, please try again later")
 		}
 
 		houseRes, err = tx.Exec(`
@@ -71,22 +71,22 @@ func NewHouse(name string) (string, error) {
 	houseId, err := houseRes.LastInsertId()
 	if err != nil {
 		logger.Logger.Error("house ID retrival error", "err", err.Error())
-		return "", fmt.Errorf("Internal error, please try again later")
+		return "", "", fmt.Errorf("Internal error, please try again later")
 	}
 
 	err = NewListEx(tx, houseId, "shopping");
 	if err != nil {
 		logger.Logger.Error("shopping list insert error", "err", err.Error())
-		return "", fmt.Errorf("Internal error, please try again later")
+		return "", "", fmt.Errorf("Internal error, please try again later")
 	}
 
 	err = NewListEx(tx, houseId, "todo");
 	if err != nil {
 		logger.Logger.Error("todo list insert error", "err", err.Error())
-		return "", fmt.Errorf("Internal error, please try again later")
+		return "", "", fmt.Errorf("Internal error, please try again later")
 	}
 
-	return fmt.Sprintf("%d", houseId), nil;
+	return strconv.FormatInt(houseId, 10), invite, nil;
 }
 
 func GetHouseEx(exec Execer, house string, skipUser []byte) (models.House, error) {
@@ -119,9 +119,9 @@ func GetHouseEx(exec Execer, house string, skipUser []byte) (models.House, error
 		return models.House{}, fmt.Errorf("Internal error, please try again later")
 	}
 
-	var users []models.HouseMember = make([]models.HouseMember, 0);
+	var users []models.User = make([]models.User, 0);
 	for rows.Next() {
-		var user models.HouseMember;
+		var user models.User;
 		var uid []byte;
 
 		if err := rows.Scan(&uid, &user.Username, &user.Avatar.BgColor, &user.Avatar.FaceColor, &user.Avatar.FaceX, &user.Avatar.FaceY, &user.Avatar.LeX, &user.Avatar.LeY, &user.Avatar.ReX, &user.Avatar.ReY, &user.Avatar.Bezier); err != nil {

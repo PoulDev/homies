@@ -7,8 +7,12 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-type House struct {
+type JHouse struct {
 	Name string 		`json:"name" binding:"required,min=4"`
+}
+
+type JInvite struct {
+	Invite string `json:"invite" binding:"required"`
 }
 
 func createHouse(c *gin.Context) {
@@ -25,12 +29,12 @@ func createHouse(c *gin.Context) {
 		return
 	}
 
-	if user.House.ID != "null" {
+	if user.HouseId != "null" {
 		c.JSON(400, gin.H{"error": "You already have a house!"})
 		return
 	}
 
-	var house House;
+	var house JHouse;
 	err = c.ShouldBind(&house)
 	if err != nil {
 		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
@@ -43,7 +47,7 @@ func createHouse(c *gin.Context) {
 		return
 	}
 	
-	houseid, err := db.NewHouse(house.Name)
+	houseid, invite, err := db.NewHouse(house.Name)
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -57,6 +61,7 @@ func createHouse(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"house": houseid,
+		"invite": invite,
 	});
 }
 
@@ -81,5 +86,46 @@ func userHouse(c *gin.Context) {
 }
 
 func joinHouse(c *gin.Context) {
+	jwtdata, _ := c.Get("data")
 
+	var invite JInvite;
+	err := c.ShouldBind(&invite)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
+		return
+	}
+
+	houseid, err := db.HouseIDByInvite(invite.Invite)
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = db.ChangeHouse(jwtdata.(jwt.MapClaims)["uid"].(string), houseid, false);
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{});
+}
+
+func inviteInfo(c *gin.Context) {
+	invite := c.Param("invite")
+
+	houseid, err := db.HouseIDByInvite(invite)
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	house, err := db.GetHouse(houseid, make([]byte, 0))
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"house": house,
+	})
 }
