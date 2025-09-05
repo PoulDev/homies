@@ -14,6 +14,7 @@ var (
     DBUser     string
     DBPassword string
     DBName     string
+	AT_DAYS    int
     JWTSecret  []byte
 	HostPort   int
 )
@@ -40,6 +41,9 @@ func LoadConfig() error {
 
 	DBName, err = getEnv("DB_NAME");
 	if (err != nil) {return err}
+
+	AT_DAYS, err = strconv.Atoi(getEnvDefault("AT_DAYS", "7"));
+	if (err != nil) {return err}
 	
 	jwtSecretString, err := getEnv("JWT_SECRET");
 	if (err != nil) {return err}
@@ -59,4 +63,11 @@ func getEnv(key string) (string, error) {
         return value, nil
     }
 	return "", fmt.Errorf("%s env variable is not present", key);
+}
+
+func getEnvDefault(key string, defaultValue string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return defaultValue
 }

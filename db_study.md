@@ -8,7 +8,6 @@
 1. `POST /auth/register`
 -> `coll:avatars`
 -> `coll:users`
--> `coll:lists # TODO: REMOVE THIS`
 
 ## App Homepage
 > ![WARNING] DA OTTIMIZZARE

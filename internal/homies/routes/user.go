@@ -20,13 +20,13 @@ func userInfo(c *gin.Context) {
 		return
 	}
 
-	account, err := db.GetUser(uid)
+	dbuser, err := db.GetUser(uid)
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, account);
+	c.JSON(200, dbuser.Account);
 }
 
 func homeOverview(c *gin.Context) {

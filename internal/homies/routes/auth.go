@@ -12,6 +12,7 @@ import (
 	"github.com/PoulDev/homies/internal/homies/checks"
 	"github.com/PoulDev/homies/internal/homies/db"
 	"github.com/PoulDev/homies/internal/homies/logger"
+	"github.com/PoulDev/homies/internal/homies/config"
 )
 
 type JUser struct {
@@ -21,11 +22,10 @@ type JUser struct {
 
 
 // Centralized between authRegister and authLogin
-func getJWT(uid string, house string) (string, error) {
+func getJWT(uid string) (string, error) {
 	return auth.GenToken(jwt.MapClaims{
 		"uid": uid,
-		"hid": house,
-		"exp": time.Now().UTC().Add(time.Hour * 24 * 21).Unix(),
+		"exp": time.Now().UTC().Add(time.Hour * 24 * config.AT_DAYS).Unix(),
 	})
 }
 
@@ -60,7 +60,7 @@ func authRegister(c *gin.Context) {
 	}
 
 	// JWT: Generating the token
-	tokenString, err := getJWT(uid, "null")
+	tokenString, err := getJWT(uid)
 
 	if (err != nil) {
 		logger.Logger.Error("JWT error", "err", err.Error())
@@ -85,7 +85,7 @@ func authLogin(c *gin.Context) {
 		return
 	}
 
-	tokenString, err := getJWT(dbuser.UID, dbuser.HouseId)
+	tokenString, err := getJWT(dbuser.UID)
 
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})

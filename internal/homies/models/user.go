@@ -7,6 +7,6 @@ type User struct {
 }
 
 type DBUser struct {
-	User
+	Account
 	HouseId string `json:"house_id"`
 }

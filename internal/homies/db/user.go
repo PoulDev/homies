@@ -11,7 +11,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func GetUserEx(exec Execer, id string) (models.Account, error) {
+func GetUserEx(exec Execer, id string) (models.DBUser, error) {
 	var (
 		username string
 		avatar models.Avatar
@@ -21,7 +21,7 @@ func GetUserEx(exec Execer, id string) (models.Account, error) {
 	b_id, err := UUIDString2Bytes(id);
 	if (err != nil) {
 		logger.Logger.Error("getUser UUIDString2Bytes error", "err", err.Error(), "id", id)
-		return models.Account{}, fmt.Errorf("There's a problem with your user, please try again later")
+		return models.DBUser{}, fmt.Errorf("There's a problem with your user, please try again later")
 	}
 
 	err = exec.QueryRow(`
@@ -31,7 +31,7 @@ func GetUserEx(exec Execer, id string) (models.Account, error) {
 
 	if (err != nil) {
 		logger.Logger.Error("select user error", "err", err.Error(), "id", id)
-		return models.Account{}, fmt.Errorf("There's a problem with your user, please try again later")
+		return models.DBUser{}, fmt.Errorf("There's a problem with your user, please try again later")
 	}
 
 	houseString := "null"
@@ -39,19 +39,20 @@ func GetUserEx(exec Execer, id string) (models.Account, error) {
 		houseString = fmt.Sprintf("%d", house.Int64)
 	}
 
-	return models.Account{
-		DBUser: models.DBUser{
+	return models.DBUser{
+		Account: models.Account{
 			User: models.User{
 				UID: id,
 				Username: username,
 				Avatar: avatar,
 			},
-			HouseId: houseString,
 		},
+
+		HouseId: houseString,
 	}, nil;
 }
 
-func GetUser(id string) (models.Account, error) {
+func GetUser(id string) (models.DBUser, error) {
 	return GetUserEx(db, id)
 }
 
@@ -120,6 +121,9 @@ func MakeHouseOwner(user string, owner bool) error {
 	return MakeHouseOwnerEx(db, user, owner)
 }
 
+// TODO: Use a JOIN query?
+// good: more performant, faster
+// bad:  If I need to update the house table, I'll have to update GetUserHouseEx and GetHouseEx
 func GetUserHouseEx(exec Execer, user string) (models.House, error) {
 	var (
 		tmp_houseid sql.NullInt64

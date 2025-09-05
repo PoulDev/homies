@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func PreattyError(err error) error { // !! TODO
+func PreattyError(err error) error {
 	return err
 }
 

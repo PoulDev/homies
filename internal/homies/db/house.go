@@ -90,7 +90,6 @@ func NewHouse(name string) (string, string, error) {
 }
 
 func GetHouseEx(exec Execer, house string, skipUser []byte) (models.House, error) {
-	// TODO: Retrive house Members
 	var resHouse models.House
 	var houseid int64
 

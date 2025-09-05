@@ -13,18 +13,15 @@ import (
 )
 
 
-// There's no RegisterEx because Register is only available with transactions - by design
-func Register(username string, password string, avatar models.Avatar) (string, error) {
+func RegisterEx(exec Execer, username string, password string, avatar models.Avatar) (string, error) {
 	hash, salt, err := auth.HashPassword(password)
 	if err != nil {
 		return "", err
 	}
 
-	// Creating User
-
 	var mysqlErr *mysql.MySQLError
 	userId := uuid.New();
-	_, err = db.Exec(`
+	_, err = exec.Exec(`
 		INSERT INTO users (
 			id, name, pwd_hash, pwd_salt,
 			bg_color, face_color, face_x, face_y,
@@ -50,16 +47,18 @@ func Register(username string, password string, avatar models.Avatar) (string, e
 	return userId.String(), nil
 }
 
+func Register(username string, password string, avatar models.Avatar) (string, error) {
+	return RegisterEx(db, username, password, avatar)
+}
 
 func LoginEx(exec Execer, name string, password string) (models.DBUser, error) {
 	var (
 		ID []byte
-		house sql.NullInt64
 		pwdHash []byte
 		pwdSalt []byte
 	)
 
-	err := exec.QueryRow("SELECT id, house, pwd_hash, pwd_salt FROM users WHERE name = ?", name).Scan(&ID, &house, &pwdHash, &pwdSalt)
+	err := exec.QueryRow("SELECT id, pwd_hash, pwd_salt FROM users WHERE name = ?", name).Scan(&ID, &pwdHash, &pwdSalt)
 	if (err != nil) {
 		if (err == sql.ErrNoRows) {
 			return models.DBUser{}, fmt.Errorf("Wrong username or password")
@@ -71,24 +70,18 @@ func LoginEx(exec Execer, name string, password string) (models.DBUser, error) {
 		return models.DBUser{}, errors.New("Wrong username or password");
 	}
 
-	var houseString string;
-	if (house.Valid) {
-		houseString = fmt.Sprintf("%d", house.Int64)
-	} else {
-		houseString = "null";
-	}
-
 	uid, err := UUIDBytes2String(ID)
 	if (err != nil) {
 		logger.Logger.Error("UUIDBytes2String error", "err", err.Error())
 		return models.DBUser{}, fmt.Errorf("there's a problem with your user, please try again later")
 	}
 
-	return models.DBUser{
-		User: models.User{
-			UID: uid,
+	return models.DBUser{ // ;-;
+		Account: models.Account{
+			User: models.User{
+				UID: uid,
+			},
 		},
-		HouseId: houseString,
 	}, nil;
 }
 
