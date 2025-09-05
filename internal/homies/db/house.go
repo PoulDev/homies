@@ -15,7 +15,7 @@ import (
 const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 func GenerateCode() (string, error) {
-	code := make([]byte, 5)
+	code := make([]byte, 6)
 	for i := range code {
 		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
 		if err != nil {

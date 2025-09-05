@@ -1,7 +1,7 @@
 CREATE TABLE `houses` (
   `id` BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NOT NULL,
-  `invite` VARCHAR(5) NOT NULL
+  `invite` VARCHAR(6) NOT NULL
 );
 
 CREATE TABLE `users` (

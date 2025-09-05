@@ -20,7 +20,7 @@ func SetupRoutes(router *gin.Engine) {
 	houseRoutes := router.Group("/house")
 	houseRoutes.Use(middlewares.AuthMiddleware);
 	houseRoutes.POST("/create", createHouse)
-	houseRoutes.POST("/join", joinHouse)
+	houseRoutes.POST("/:invite", joinHouse)
 	houseRoutes.GET("/:invite", inviteInfo)
 
 	cartRoutes := router.Group("/lists")

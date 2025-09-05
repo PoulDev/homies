@@ -11,7 +11,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func GetUserEx(exec Execer, id string) (models.DBUser, error) {
+func GetUserEx(exec Execer, id string) (models.Account, error) {
 	var (
 		username string
 		avatar models.Avatar
@@ -21,7 +21,7 @@ func GetUserEx(exec Execer, id string) (models.DBUser, error) {
 	b_id, err := UUIDString2Bytes(id);
 	if (err != nil) {
 		logger.Logger.Error("getUser UUIDString2Bytes error", "err", err.Error(), "id", id)
-		return models.DBUser{}, fmt.Errorf("There's a problem with your user, please try again later")
+		return models.Account{}, fmt.Errorf("There's a problem with your user, please try again later")
 	}
 
 	err = exec.QueryRow(`
@@ -31,7 +31,7 @@ func GetUserEx(exec Execer, id string) (models.DBUser, error) {
 
 	if (err != nil) {
 		logger.Logger.Error("select user error", "err", err.Error(), "id", id)
-		return models.DBUser{}, fmt.Errorf("There's a problem with your user, please try again later")
+		return models.Account{}, fmt.Errorf("There's a problem with your user, please try again later")
 	}
 
 	houseString := "null"
@@ -39,17 +39,19 @@ func GetUserEx(exec Execer, id string) (models.DBUser, error) {
 		houseString = fmt.Sprintf("%d", house.Int64)
 	}
 
-	return models.DBUser{
-		User: models.User{
-			UID: id,
-			Username: username,
-			Avatar: avatar,
+	return models.Account{
+		DBUser: models.DBUser{
+			User: models.User{
+				UID: id,
+				Username: username,
+				Avatar: avatar,
+			},
+			HouseId: houseString,
 		},
-		HouseId: houseString,
 	}, nil;
 }
 
-func GetUser(id string) (models.DBUser, error) {
+func GetUser(id string) (models.Account, error) {
 	return GetUserEx(db, id)
 }
 

@@ -11,17 +11,8 @@ type JHouse struct {
 	Name string 		`json:"name" binding:"required,min=4"`
 }
 
-type JInvite struct {
-	Invite string `json:"invite" binding:"required"`
-}
-
 func createHouse(c *gin.Context) {
 	jwtdata, _ := c.Get("data")
-
-	if (c.Param("id") != "me") {
-		c.JSON(400, gin.H{"error": "You can create houses only for yourself!"})
-		return
-	}
 
 	user, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
@@ -88,14 +79,9 @@ func userHouse(c *gin.Context) {
 func joinHouse(c *gin.Context) {
 	jwtdata, _ := c.Get("data")
 
-	var invite JInvite;
-	err := c.ShouldBind(&invite)
-	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
-		return
-	}
+	invite := c.Param("invite")
 
-	houseid, err := db.HouseIDByInvite(invite.Invite)
+	houseid, err := db.HouseIDByInvite(invite)
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return

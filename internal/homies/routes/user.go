@@ -20,14 +20,10 @@ func userInfo(c *gin.Context) {
 		return
 	}
 
-	user, err := db.GetUser(uid)
+	account, err := db.GetUser(uid)
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
-	}
-
-	account := models.Account{
-		User: user.User,
 	}
 
 	c.JSON(200, account);
