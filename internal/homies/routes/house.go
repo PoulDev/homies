@@ -32,7 +32,7 @@ func createHouse(c *gin.Context) {
 		return
 	}
 
-	err = checks.CheckHouseName(house.Name)
+	err = checks.Check("house_name", house.Name)
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return

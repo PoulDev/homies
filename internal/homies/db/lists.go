@@ -9,24 +9,35 @@ import (
 	"fmt"
 )
 
-func NewListEx(exec Execer, houseId int64, name string) error {
-	_, err := exec.Exec(`
+func NewListEx(exec Execer, houseId string, name string) error {
+	houseIdInt, err := strconv.Atoi(houseId)
+	if (err != nil) {
+		logger.Logger.Error("list ID atoi error", "err", err.Error(), "houseId", houseId)
+		return fmt.Errorf("There's a problem with your house, please try again later")
+	}
+
+	_, err = exec.Exec(`
 		INSERT INTO lists (house_id, name)
 		VALUES (?, ?)`,
-		houseId, name,
+		houseIdInt, name,
 	)
 	if err != nil {return err;}
 
 	return nil;
 }
 
-func NewList(houseId int64, name string) error {
+func NewList(houseId string, name string) error {
 	return NewListEx(db, houseId, name)
 }
 
-func GetListsEx(exec Execer, houseId int64) ([]models.List, error) {
-	logger.Logger.Info("get lists", "houseId", houseId)
-	rows, err := exec.Query(`SELECT id, name FROM lists WHERE house_id = ?`, houseId);
+func GetListsEx(exec Execer, houseId string) ([]models.List, error) {
+	houseIdInt, err := strconv.Atoi(houseId)
+	if (err != nil) {
+		logger.Logger.Error("list ID atoi error", "err", err.Error(), "houseId", houseId)
+		return nil, fmt.Errorf("There's a problem with your house, please try again later")
+	}
+
+	rows, err := exec.Query(`SELECT id, name FROM lists WHERE house_id = ?`, houseIdInt);
 	defer rows.Close()
 
 	if (err != nil) {
@@ -55,7 +66,7 @@ func GetListsEx(exec Execer, houseId int64) ([]models.List, error) {
 	return lists, nil;
 }
 
-func GetLists(houseId int64) ([]models.List, error) {
+func GetLists(houseId string) ([]models.List, error) {
 	return GetListsEx(db, houseId)
 }
 

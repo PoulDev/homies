@@ -2,10 +2,9 @@ package routes
 
 import (
 	"github.com/PoulDev/homies/internal/homies/db"
+	"github.com/PoulDev/homies/internal/homies/checks"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
-
-	"strconv"
 )
 
 type ItemInput struct {
@@ -15,9 +14,13 @@ type ItemInput struct {
 func getLists(c *gin.Context) {
 	jwtdata, _ := c.Get("data")
 	
-	hid, err := strconv.ParseInt(jwtdata.(jwt.MapClaims)["hid"].(string), 10, 64)
+	dbuser, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
 
-	lists, err := db.GetLists(hid)
+	lists, err := db.GetLists(dbuser.HouseId)
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -38,6 +41,12 @@ func newItem(c *gin.Context) {
 		return
 	}
 
+	err = checks.Check("list_item_text", item.Text)
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
 	id_param := c.Param("id")
 
 	list_hid, err := db.GetListHID(id_param)
@@ -46,7 +55,13 @@ func newItem(c *gin.Context) {
 		return
 	}
 
-	if jwtdata.(jwt.MapClaims)["hid"].(string) != list_hid {
+	dbuser, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	if dbuser.HouseId != list_hid {
 		c.JSON(400, gin.H{"error": "You can't access other people lists!"})
 		return
 	}
@@ -71,7 +86,13 @@ func getItems(c *gin.Context) {
 		return
 	}
 
-	if jwtdata.(jwt.MapClaims)["hid"].(string) != list_hid {
+	dbuser, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	if dbuser.HouseId != list_hid {
 		c.JSON(400, gin.H{"error": "You can't access other people lists!"})
 		return
 	}

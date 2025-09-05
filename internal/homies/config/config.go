@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 	"strconv"
 
 	"github.com/joho/godotenv"
@@ -14,7 +15,7 @@ var (
     DBUser     string
     DBPassword string
     DBName     string
-	AT_DAYS    int
+	AT_DAYS    time.Duration
     JWTSecret  []byte
 	HostPort   int
 )
@@ -26,8 +27,7 @@ func LoadConfig() error {
 
 	var err error;
 
-	// gestione degli errori davvero ottimale
-	// ( mi taglio il pisello )
+	// I hate go's error handling
     DBHost, err = getEnv("DB_HOST");
 	if (err != nil) {return err}
 
@@ -42,8 +42,9 @@ func LoadConfig() error {
 	DBName, err = getEnv("DB_NAME");
 	if (err != nil) {return err}
 
-	AT_DAYS, err = strconv.Atoi(getEnvDefault("AT_DAYS", "7"));
+	days, err := time.ParseDuration(getEnvDefault("AT_DAYS", "7") + "h");
 	if (err != nil) {return err}
+	AT_DAYS = 24 * days;
 	
 	jwtSecretString, err := getEnv("JWT_SECRET");
 	if (err != nil) {return err}

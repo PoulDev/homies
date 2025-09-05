@@ -38,13 +38,7 @@ func homeOverview(c *gin.Context) {
 		return
 	}
 
-	uid, err := db.UUIDString2Bytes(user.UID)
-	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
-	house, err := db.GetHouse(jwtdata.(jwt.MapClaims)["hid"].(string), uid)
+	house, err := db.GetUserHouse(jwtdata.(jwt.MapClaims)["uid"].(string))
 
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})

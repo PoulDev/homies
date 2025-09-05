@@ -74,13 +74,15 @@ func NewHouse(name string) (string, string, error) {
 		return "", "", fmt.Errorf("Internal error, please try again later")
 	}
 
-	err = NewListEx(tx, houseId, "shopping");
+	houseIdStr := strconv.FormatInt(houseId, 10)
+
+	err = NewListEx(tx, houseIdStr, "shopping");
 	if err != nil {
 		logger.Logger.Error("shopping list insert error", "err", err.Error())
 		return "", "", fmt.Errorf("Internal error, please try again later")
 	}
 
-	err = NewListEx(tx, houseId, "todo");
+	err = NewListEx(tx, houseIdStr, "todo");
 	if err != nil {
 		logger.Logger.Error("todo list insert error", "err", err.Error())
 		return "", "", fmt.Errorf("Internal error, please try again later")

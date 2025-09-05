@@ -25,7 +25,7 @@ type JUser struct {
 func getJWT(uid string) (string, error) {
 	return auth.GenToken(jwt.MapClaims{
 		"uid": uid,
-		"exp": time.Now().UTC().Add(time.Hour * 24 * config.AT_DAYS).Unix(),
+		"exp": time.Now().UTC().Add(config.AT_DAYS).Unix(),
 	})
 }
 
@@ -39,13 +39,13 @@ func authRegister(c *gin.Context) {
 
 	// Input Validation
 
-	err = checks.CheckUsername(user.Username)
+	err = checks.Check("username", user.Username)
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = checks.CheckPassword(user.Password)
+	err = checks.Check("password", user.Password)
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
