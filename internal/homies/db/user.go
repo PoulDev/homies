@@ -88,6 +88,26 @@ func ChangeHouse(user string, house string, make_owner bool) error {
 	return ChangeHouseEx(db, user, house, make_owner)
 }
 
+func LeaveHouseEx(exec Execer, user string) error {
+	userid, err := UUIDString2Bytes(user)
+	if (err != nil) { 
+		logger.Logger.Error("LeaveHouse UUIDString2Bytes error", "err", err.Error(), "user", user)
+		return fmt.Errorf("There's a problem with your user, please try again later")
+	}
+
+	_, err = exec.Exec("UPDATE users SET house = NULL WHERE id = ?", userid)
+	if (err != nil) {
+		logger.Logger.Error("LeaveHouse update error", "err", err.Error(), "user", user)
+		return fmt.Errorf("Internal error, please try again later")
+	}
+
+	return nil;
+}
+
+func LeaveHouse(user string) error {
+	return LeaveHouseEx(db, user)
+}
+
 func HouseIDByInvite(invite string) (string, error) {
 	var houseid int64
 	

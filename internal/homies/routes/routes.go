@@ -28,6 +28,7 @@ func SetupRoutes(router *gin.Engine) {
 	userRoutes.Use(middlewares.AuthMiddleware);
 	userRoutes.GET("/:id", userInfo)
 	userRoutes.GET("/:id/house", userHouse)
+	userRoutes.DELETE("/:id/house", leaveHouse)
 	userRoutes.GET("/:id/overview", homeOverview)
 
 	houseRoutes := router.Group("/house")

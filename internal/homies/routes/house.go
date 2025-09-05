@@ -115,3 +115,15 @@ func inviteInfo(c *gin.Context) {
 		"house": house,
 	})
 }
+
+func leaveHouse(c *gin.Context) {
+	jwtdata, _ := c.Get("data")
+
+	err := db.LeaveHouse(jwtdata.(jwt.MapClaims)["uid"].(string))
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{});
+}
