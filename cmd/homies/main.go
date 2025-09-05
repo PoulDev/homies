@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/PoulDev/homies/internal/homies/config"
+	"github.com/PoulDev/homies/internal/homies/checks"
 	"github.com/PoulDev/homies/internal/homies/db"
 	"github.com/PoulDev/homies/internal/homies/routes"
 
@@ -23,6 +24,8 @@ func main() {
 		log.Println("Connection to the database failed!")
 		log.Panic(err)
 	}
+
+	checks.Init()
 
 	router := gin.Default()
 	routes.SetupRoutes(router)

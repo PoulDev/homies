@@ -8,7 +8,8 @@ import (
 
 var CheckersData map[string]models.Checker;
 
-func init() {
+func Init() {
+	fmt.Println("Initializing checks...")
 	CheckersData = make(map[string]models.Checker);
 
 	// Password

@@ -32,4 +32,7 @@ func SetupRoutes(router *gin.Engine) {
 	debugRoutes := router.Group("/debug")
 	debugRoutes.Use(middlewares.AuthMiddleware, middlewares.AdminMiddleware);
 	debugRoutes.GET("/db/check", checkDatabase)
+
+	datasetRoutes := router.Group("/data")
+	datasetRoutes.GET("/checks-dataset", checksDataset)
 }
