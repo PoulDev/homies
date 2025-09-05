@@ -8,7 +8,7 @@ import (
 
 var CheckersData map[string]models.Checker;
 
-func Init() {
+func init() {
 	fmt.Println("Initializing checks...")
 	CheckersData = make(map[string]models.Checker);
 
