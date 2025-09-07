@@ -51,7 +51,6 @@ func createHouse(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"house": houseid,
 		"invite": invite,
 	});
 }
@@ -72,6 +71,7 @@ func userHouse(c *gin.Context) {
 
 	c.JSON(200, gin.H{
 		"name": house.Name,
+		"invite": house.Invite,
 		"members": house.Members,
 	})
 }
@@ -121,9 +121,7 @@ func inviteInfo(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{
-		"house": house,
-	})
+	c.JSON(200, house)
 }
 
 func leaveHouse(c *gin.Context) {

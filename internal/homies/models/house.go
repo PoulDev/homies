@@ -1,7 +1,7 @@
 package models
 
 type House struct {
-	ID      string `json:"id"`
+	Invite  string `json:"invite"`
 	Name    string `json:"name"`
 	Members []User `json:"members"`
 }

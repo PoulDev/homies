@@ -100,13 +100,11 @@ func GetHouseEx(exec Execer, house string, skipUser []byte) (models.House, error
 	}
 
 	logger.Logger.Info("get house", "house", house)
-	err := exec.QueryRow("SELECT id, name FROM houses WHERE id = ?", house).Scan(&houseid, &resHouse.Name)
+	err := exec.QueryRow("SELECT id, invite, name FROM houses WHERE id = ?", house).Scan(&houseid, &resHouse.Invite, &resHouse.Name)
 	if (err != nil) {
 		logger.Logger.Error("house get error", "err", err.Error())
 		return models.House{}, fmt.Errorf("Internal error, please try again later")
 	}
-
-	resHouse.ID = strconv.FormatInt(houseid, 10)
 
 	// Retrive house Members
 	// Why this must be a mess every fucking time?
