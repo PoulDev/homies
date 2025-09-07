@@ -59,10 +59,15 @@ func Check(key string, value string) error {
 
 func BasicStringCheck(key string) func(string) error {
 	return func(value string) error {
-		if (len(value) < CheckersData[key].MinLength) {
-			return fmt.Errorf("Your %s must be at least %d characters long!", CheckersData[key].FriendlyName, CheckersData[key].MinLength);
-		} else if (len(value) >= CheckersData[key].MaxLength) {
-			return fmt.Errorf("Your %s is too long! max %d characters.", CheckersData[key].FriendlyName, CheckersData[key].MaxLength);
+		checker, ok := CheckersData[key]
+		if (!ok) {
+			return fmt.Errorf("Internal error: Checker %s not found!", key)
+		}
+
+		if (len(value) < checker.MinLength) {
+			return fmt.Errorf("Your %s must be at least %d characters long!", checker.FriendlyName, checker.MinLength);
+		} else if (len(value) >= checker.MaxLength) {
+			return fmt.Errorf("Your %s is too long! max %d characters.", checker.FriendlyName, checker.MaxLength);
 		}
 
 		return nil;
