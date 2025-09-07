@@ -16,7 +16,7 @@ func init() {
 	CheckersData["password"] = models.Checker{
 		Check: models.Check{
 			FriendlyName: "password",
-			MinLength: 6,
+			MinLength: 8,
 			MaxLength: 100,
 		},
 		Checker: BasicStringCheck("password"),
@@ -33,13 +33,13 @@ func init() {
 	}
 
 	// Home name
-	CheckersData["home_name"] = models.Checker{
+	CheckersData["house_name"] = models.Checker{
 		Check: models.Check{
 			FriendlyName: "home name",
 			MinLength: 4,
 			MaxLength: 25,
 		},
-		Checker: BasicStringCheck("home_name"),
+		Checker: BasicStringCheck("house_name"),
 	}
 
 	// List Item text
@@ -59,7 +59,7 @@ func Check(key string, value string) error {
 
 func BasicStringCheck(key string) func(string) error {
 	return func(value string) error {
-		if (len(value) <= CheckersData[key].MinLength) {
+		if (len(value) < CheckersData[key].MinLength) {
 			return fmt.Errorf("Your %s must be at least %d characters long!", CheckersData[key].FriendlyName, CheckersData[key].MinLength);
 		} else if (len(value) >= CheckersData[key].MaxLength) {
 			return fmt.Errorf("Your %s is too long! max %d characters.", CheckersData[key].FriendlyName, CheckersData[key].MaxLength);

@@ -78,8 +78,18 @@ func userHouse(c *gin.Context) {
 
 func joinHouse(c *gin.Context) {
 	jwtdata, _ := c.Get("data")
-
 	invite := c.Param("invite")
+
+	user, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	if user.HouseId != "null" {
+		c.JSON(400, gin.H{"error": "You already have a house!"})
+		return
+	}
 
 	houseid, err := db.HouseIDByInvite(invite)
 	if (err != nil) {
