@@ -2,7 +2,7 @@ package models
 
 type User struct {
 	UID      string `json:"uid"`
-	Username string `json:"username"`
+	Username string `json:"name"`
 	Avatar   Avatar `json:"avatar"`
 }
 
