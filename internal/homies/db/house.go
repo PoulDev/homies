@@ -12,7 +12,7 @@ import (
 	"github.com/PoulDev/homies/internal/homies/models"
 )
 
-const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 func GenerateCode() (string, error) {
 	code := make([]byte, 6)
