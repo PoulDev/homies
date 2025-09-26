@@ -118,7 +118,7 @@ func GetHouseEx(exec Execer, house string, skipUser []byte) (models.House, error
 		return models.House{}, fmt.Errorf("Internal error, please try again later")
 	}
 
-	var users []models.User = make([]models.User, 0);
+	var users = make([]models.User, 0);
 	for rows.Next() {
 		var user models.User;
 		var uid []byte;

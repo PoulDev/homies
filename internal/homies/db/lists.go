@@ -147,7 +147,7 @@ func NewItemEx(exec Execer, text string, listId string, authorId string) error {
 
 	_, err = exec.Exec(`UPDATE lists SET items = items + 1 WHERE id = ?`, l_id)
 	if err != nil {
-		logger.Logger.Error("list update error", "err", err.Error(), "listId", listId)
+		logger.Logger.Error("list update error", "err", err.Error(), "authorId", authorId)
 		return fmt.Errorf("There's a problem with updating your list, please try again later")
 	}
 
@@ -164,4 +164,36 @@ func NewItemEx(exec Execer, text string, listId string, authorId string) error {
 
 func NewItem(text string, listId string, authorId string) error {
 	return NewItemEx(db, text, listId, authorId)
+}
+
+func UpdateItemEx(exec Execer, listId string, itemId string, text string, authorId string) error {
+	i_id, err := strconv.Atoi(itemId)
+	if err != nil {
+		logger.Logger.Error("list item ID atoi error", "err", err.Error(), "listId", itemId)
+		return fmt.Errorf("There's a problem with your list, please try again later")
+	}
+
+	l_id, err := strconv.Atoi(listId)
+	if err != nil {
+		logger.Logger.Error("list ID atoi error", "err", err.Error(), "listId", listId)
+		return fmt.Errorf("There's a problem with your list, please try again later")
+	}
+
+	a_id, err := UUIDString2Bytes(authorId)
+	if err != nil {
+		logger.Logger.Error("list item UUIDString2Bytes error", "err", err.Error(), "authorId", authorId)
+		return fmt.Errorf("There's a problem with your list, please try again later")
+	}
+
+	_, err = exec.Exec(`UPDATE todos SET text = ?, author = ? WHERE (id = ? AND list_id = ?)`, text, a_id, i_id, l_id)
+	if err != nil {
+		logger.Logger.Error("list item update error", "err", err.Error(), "itemId", itemId)
+		return fmt.Errorf("There's a problem with updating your list, please try again later")
+	}
+
+	return nil
+}
+
+func UpdateItem(listId string, itemId string, text string, authorId string) error {
+	return UpdateItemEx(db, listId, itemId, text, authorId)
 }

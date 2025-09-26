@@ -44,6 +44,7 @@ func SetupRoutes(router *gin.Engine) {
 	cartRoutes.GET("/", getLists)
 	cartRoutes.GET("/:id/", getItems)
 	cartRoutes.PUT("/:id/", newItem)
+	cartRoutes.PATCH("/:id/:item_id", updateItem)
 
 	debugRoutes := router.Group("/debug")
 	debugRoutes.Use(middlewares.GetLimiter(ratelimit.New(debugRLimit)))
