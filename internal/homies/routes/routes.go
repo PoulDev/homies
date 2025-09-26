@@ -3,7 +3,7 @@ package routes
 import (
 	"go.uber.org/ratelimit"
 
-	"github.com/PoulDev/homies/internal/homies/middlewares"
+	"github.com/zibbadies/homies/internal/homies/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,6 +30,8 @@ func SetupRoutes(router *gin.Engine) {
 	userRoutes.GET("/:id/house", userHouse)
 	userRoutes.DELETE("/:id/house", leaveHouse)
 	userRoutes.GET("/:id/overview", homeOverview)
+	userRoutes.GET("/:id/avatar", generateAvatar)
+	userRoutes.PATCH("/:id/avatar", setAavatar)
 
 	houseRoutes := router.Group("/house")
 	houseRoutes.Use(middlewares.GetLimiter(ratelimit.New(houseRLimit)))

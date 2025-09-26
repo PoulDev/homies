@@ -7,12 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 
-	"github.com/PoulDev/homies/pkg/homies/auth"
-	"github.com/PoulDev/homies/pkg/homies/avatar"
-	"github.com/PoulDev/homies/internal/homies/checks"
-	"github.com/PoulDev/homies/internal/homies/db"
-	"github.com/PoulDev/homies/internal/homies/logger"
-	"github.com/PoulDev/homies/internal/homies/config"
+	"github.com/zibbadies/homies/pkg/homies/auth"
+	"github.com/zibbadies/homies/pkg/homies/avatar"
+	"github.com/zibbadies/homies/internal/homies/checks"
+	"github.com/zibbadies/homies/internal/homies/db"
+	"github.com/zibbadies/homies/internal/homies/logger"
+	"github.com/zibbadies/homies/internal/homies/config"
 )
 
 type JUser struct {

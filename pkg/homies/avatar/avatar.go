@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 
-	"github.com/PoulDev/homies/internal/homies/models"
+	"github.com/zibbadies/homies/internal/homies/models"
 )
 
 type Color struct {

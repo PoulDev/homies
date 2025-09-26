@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/PoulDev/homies/pkg/homies/auth"
+	"github.com/zibbadies/homies/pkg/homies/auth"
 	"net/http"
 )
 

@@ -2,11 +2,14 @@ package checks;
 
 import (
 	"fmt"
+	"regexp"
 
-	"github.com/PoulDev/homies/internal/homies/models"
+	"github.com/zibbadies/homies/internal/homies/models"
 )
 
 var CheckersData map[string]models.Checker;
+
+var colorRegex = regexp.MustCompile(`^([A-Fa-f0-9]{6})$`)
 
 func init() {
 	fmt.Println("Initializing checks...")
@@ -51,6 +54,26 @@ func init() {
 		},
 		Checker: BasicStringCheck("list_item_text"),
 	}
+
+	// Avatar Color
+	CheckersData["color"] = models.Checker{
+		Check: models.Check{
+			FriendlyName: "color",
+			MinLength: 6,
+			MaxLength: 6,
+		},
+		Checker: BasicRegexCheck("color", colorRegex),
+	}
+
+	// Avatar bezier
+	CheckersData["bezier"] = models.Checker{
+		Check: models.Check{
+			FriendlyName: "bezier",
+			MinLength: 3,
+			MaxLength: 20,
+		},
+		Checker: BezierCheck,
+	}
 }
 
 func Check(key string, value string) error {
@@ -74,3 +97,17 @@ func BasicStringCheck(key string) func(string) error {
 	}
 }
 
+func BasicRegexCheck(key string, regex *regexp.Regexp) func(string) error {
+	return func(value string) error {
+		checker, ok := CheckersData[key]
+		if (!ok) {
+			return fmt.Errorf("Internal error: Checker %s not found!", key)
+		}
+
+		if (!regex.MatchString(value)) {
+			return fmt.Errorf("Your %s is not valid!", checker.FriendlyName);
+		}
+
+		return nil;
+	}
+}

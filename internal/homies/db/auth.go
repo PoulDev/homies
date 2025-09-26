@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/PoulDev/homies/internal/homies/logger"
-	"github.com/PoulDev/homies/internal/homies/models"
-	"github.com/PoulDev/homies/pkg/homies/auth"
+	"github.com/zibbadies/homies/internal/homies/logger"
+	"github.com/zibbadies/homies/internal/homies/models"
+	"github.com/zibbadies/homies/pkg/homies/auth"
 
 	"github.com/lib/pq"
 )

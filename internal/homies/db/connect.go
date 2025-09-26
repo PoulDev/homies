@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/PoulDev/homies/internal/homies/config"
+	"github.com/zibbadies/homies/internal/homies/config"
 	_ "github.com/lib/pq"
 )
 

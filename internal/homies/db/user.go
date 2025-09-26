@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/PoulDev/homies/internal/homies/logger"
-	"github.com/PoulDev/homies/internal/homies/models"
+	"github.com/zibbadies/homies/internal/homies/logger"
+	"github.com/zibbadies/homies/internal/homies/models"
 	_ "github.com/lib/pq"
 )
 
@@ -117,9 +117,6 @@ func MakeHouseOwner(user string, owner bool) error {
 	return MakeHouseOwnerEx(db, user, owner)
 }
 
-// TODO: Use a JOIN query?
-// good: more performant, faster
-// bad:  If I need to update the house table, I'll have to update GetUserHouseEx and GetHouseEx
 func GetUserHouseEx(exec Execer, user string) (models.House, error) {
 	var (
 		tmp_houseid sql.NullInt64
@@ -138,7 +135,10 @@ func GetUserHouseEx(exec Execer, user string) (models.House, error) {
 	} else {
 		houseid = tmp_houseid.Int64
 	}
-	
+
+	// TODO: Use a JOIN query?
+	// good: more performant, faster
+	// bad:  If I need to update the house table, I'll have to update GetUserHouseEx and GetHouseEx
 	house, err := GetHouse(strconv.FormatInt(houseid, 10), user)
 
 	if (err != nil) {
@@ -153,3 +153,16 @@ func GetUserHouse(user string) (models.House, error) {
 	return GetUserHouseEx(db, user)
 }
 
+func SetAvatarEx(exec Execer, userId string, avatar models.Avatar) error {
+	_, err := exec.Exec("UPDATE users SET bg_color = $1, face_color = $2, face_x = $3, face_y = $4, left_eye_x = $5, left_eye_y = $6, right_eye_x = $7, right_eye_y = $8, bezier = $9 WHERE id = $10", avatar.BgColor, avatar.FaceColor, avatar.FaceX, avatar.FaceY, avatar.LeX, avatar.LeY, avatar.ReX, avatar.ReY, avatar.Bezier, userId)
+	if (err != nil) {
+		logger.Logger.Error("SetAvatar update error", "err", err.Error(), "user", userId)
+		return fmt.Errorf("Internal error, please try again later")
+	}
+
+	return nil;
+}
+
+func SetAvatar(user string, avatar models.Avatar) error {
+	return SetAvatarEx(db, user, avatar)
+}

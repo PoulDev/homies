@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/PoulDev/homies/internal/homies/checks"
-	"github.com/PoulDev/homies/internal/homies/models"
+	"github.com/zibbadies/homies/internal/homies/checks"
+	"github.com/zibbadies/homies/internal/homies/models"
 	"github.com/gin-gonic/gin"
 )
 

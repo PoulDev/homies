@@ -1,4 +1,4 @@
-module github.com/PoulDev/homies
+module github.com/zibbadies/homies
 
 go 1.24.3
 

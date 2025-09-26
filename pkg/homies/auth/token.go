@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/PoulDev/homies/internal/homies/config"
+	"github.com/zibbadies/homies/internal/homies/config"
 	"github.com/golang-jwt/jwt"
 )
 

@@ -1,8 +1,10 @@
 package routes
 
 import (
-	"github.com/PoulDev/homies/internal/homies/db"
-	"github.com/PoulDev/homies/internal/homies/models"
+	"github.com/zibbadies/homies/internal/homies/db"
+	"github.com/zibbadies/homies/internal/homies/models"
+	"github.com/zibbadies/homies/pkg/homies/avatar"
+	"github.com/zibbadies/homies/internal/homies/checks"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
@@ -52,4 +54,49 @@ func homeOverview(c *gin.Context) {
 	}
 
 	c.JSON(200, overview);
+}
+
+func generateAvatar(c *gin.Context) {
+	/*
+		There's no fucking reason to keep this server-side, but to speed up the
+		app development, we'll keep it this way. for now.
+	*/
+	avatar := avatar.RandAvatar()
+	c.JSON(200, avatar);
+}
+
+func setAavatar(c *gin.Context) {
+	/*
+		A funny guy could just send handmade values to this endpoint to get some *interesting* avatars,
+		if he does that, well, good for him, he earned it.
+
+		( We tought about adding a digital signature to the avatar in generateAvatar() 
+		to prevent this, but it's more funny this way )
+	*/
+	jwtdata, _ := c.Get("data")
+
+	var avatar models.Avatar;
+	err := c.ShouldBind(&avatar)
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
+		return
+	}
+
+	if err = checks.Check("color", avatar.BgColor); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err = checks.Check("bezier", avatar.Bezier); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = db.SetAvatar(jwtdata.(jwt.MapClaims)["uid"].(string), avatar)
+	if (err != nil) {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{});
 }

@@ -12,7 +12,7 @@ rommates app rest api
 
 #### 1. Clone the repo
 ```sh
-git clone https://github.com/PoulDev/homies.git
+git clone https://github.com/zibbadies/homies.git
 ```
 
 #### 2. Change directory

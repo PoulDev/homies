@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/PoulDev/homies/internal/homies/db"
+	"github.com/zibbadies/homies/internal/homies/db"
 	"github.com/gin-gonic/gin"
 )
 

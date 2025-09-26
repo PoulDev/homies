@@ -1,8 +1,8 @@
 package db
 
 import (
-	"github.com/PoulDev/homies/internal/homies/logger"
-	"github.com/PoulDev/homies/internal/homies/models"
+	"github.com/zibbadies/homies/internal/homies/logger"
+	"github.com/zibbadies/homies/internal/homies/models"
 
 	"strconv"
 	"fmt"

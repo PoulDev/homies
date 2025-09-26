@@ -7,8 +7,8 @@ import (
 	"math/big"
 	"github.com/lib/pq"
 
-	"github.com/PoulDev/homies/internal/homies/logger"
-	"github.com/PoulDev/homies/internal/homies/models"
+	"github.com/zibbadies/homies/internal/homies/logger"
+	"github.com/zibbadies/homies/internal/homies/models"
 )
 
 const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

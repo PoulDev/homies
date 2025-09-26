@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/PoulDev/homies/internal/homies/config"
-	"github.com/PoulDev/homies/internal/homies/db"
-	"github.com/PoulDev/homies/internal/homies/routes"
+	"github.com/zibbadies/homies/internal/homies/config"
+	"github.com/zibbadies/homies/internal/homies/db"
+	"github.com/zibbadies/homies/internal/homies/routes"
 
 	"github.com/gin-gonic/gin"
 )
