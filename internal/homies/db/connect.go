@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/PoulDev/homies/internal/homies/config"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
 // Internal Variables
@@ -20,7 +20,9 @@ type Execer interface {
 }
 
 func ConnectDatabase() error {
-	newdb, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s)/%s", config.DBUser, config.DBPassword, config.DBHost, config.DBName))
+    psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.DBHost, config.DBPort, config.DBUser, config.DBPassword, config.DBName)
+
+	newdb, err := sql.Open("postgres", psqlconn)
 	db = newdb;
 	if (err != nil) {
 		return err;

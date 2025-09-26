@@ -12,6 +12,7 @@ import (
 
 var (
     DBHost     string
+	DBPort     int
     DBUser     string
     DBPassword string
     DBName     string
@@ -31,6 +32,9 @@ func LoadConfig() error {
     DBHost, err = getEnv("DB_HOST");
 	if (err != nil) {return err}
 
+	DBPort, err = strconv.Atoi(getEnvDefault("DB_PORT", "5432"));
+	if (err != nil) {return err}
+
     DBUser, err = getEnv("DB_USER");
 	if (err != nil) {DBUser = "none"}
    
@@ -42,9 +46,9 @@ func LoadConfig() error {
 	DBName, err = getEnv("DB_NAME");
 	if (err != nil) {return err}
 
-	days, err := time.ParseDuration(getEnvDefault("AT_DAYS", "7") + "h");
+	hours, err := time.ParseDuration(getEnvDefault("AT_DAYS", "7") + "h");
 	if (err != nil) {return err}
-	AT_DAYS = 24 * days;
+	AT_DAYS = 24 * hours;
 	
 	jwtSecretString, err := getEnv("JWT_SECRET");
 	if (err != nil) {return err}

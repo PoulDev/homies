@@ -53,6 +53,8 @@ func authRegister(c *gin.Context) {
 
 	// DataBase: Registering the user
 
+	logger.Logger.Info("Registering user", "username", user.Username)
+
 	uid, err := db.Register(user.Username, user.Password, avatar.RandAvatar())
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})

@@ -5,7 +5,6 @@ import (
 	"github.com/PoulDev/homies/internal/homies/models"
 
 	"strconv"
-	"log"
 	"fmt"
 )
 
@@ -18,7 +17,7 @@ func NewListEx(exec Execer, houseId string, name string) error {
 
 	_, err = exec.Exec(`
 		INSERT INTO lists (house_id, name)
-		VALUES (?, ?)`,
+		VALUES ($1, $2)`,
 		houseIdInt, name,
 	)
 	if err != nil {return err;}
@@ -37,7 +36,7 @@ func GetListsEx(exec Execer, houseId string) ([]models.List, error) {
 		return nil, fmt.Errorf("There's a problem with your house, please try again later")
 	}
 
-	rows, err := exec.Query(`SELECT id, name FROM lists WHERE house_id = ?`, houseIdInt);
+	rows, err := exec.Query(`SELECT id, name FROM lists WHERE house_id = $1`, houseIdInt);
 	defer rows.Close()
 
 	if (err != nil) {
@@ -73,7 +72,7 @@ func GetLists(houseId string) ([]models.List, error) {
 func GetListHID(listId string) (string, error) {
 	var houseId int64;
 	
-	err := db.QueryRow(`SELECT house_id FROM lists WHERE id = ?`, listId).Scan(&houseId);
+	err := db.QueryRow(`SELECT house_id FROM lists WHERE id = $1`, listId).Scan(&houseId);
 	if (err != nil) {
 		logger.Logger.Error("user house ID retrival error", "err", err.Error())
 		return "", fmt.Errorf("There's a problem with this list, please try again later")
@@ -89,7 +88,7 @@ func GetItemsEx(exec Execer, listId string) ([]models.Item, error) {
 		return nil, fmt.Errorf("There's a problem with this list, please try again later")
 	}
 
-	rows, err := exec.Query(`SELECT id, text, completed, author FROM todos WHERE list_id = ?`, b_id);
+	rows, err := exec.Query(`SELECT id, text, completed, author FROM todos WHERE list_id = $1`, b_id);
 	defer rows.Close()
 
 	if err != nil {
@@ -101,14 +100,11 @@ func GetItemsEx(exec Execer, listId string) ([]models.Item, error) {
 	for rows.Next() {
 		var item models.Item;
 		var iid int64;
-		var author []byte;
 
-		if err := rows.Scan(&iid, &item.Text, &item.Completed, &author); err != nil {
+		if err := rows.Scan(&iid, &item.Text, &item.Completed, &item.Author); err != nil {
 			logger.Logger.Error("list row scan error", "err", err.Error(), "listId", listId)
 			return nil, fmt.Errorf("There's a problem with your list, please try again later")
 		}
-		log.Println(item.Text)
-		item.Author, err = UUIDBytes2String(author);
 		item.Id = strconv.FormatInt(iid, 10);
 
 		if (err != nil) {
@@ -139,13 +135,7 @@ func NewItemEx(exec Execer, text string, listId string, authorId string) error {
 		return fmt.Errorf("There's a problem with your list, please try again later")
 	}
 
-	a_id, err := UUIDString2Bytes(authorId)
-	if err != nil {
-		logger.Logger.Error("list UUIDString2Bytes error", "err", err.Error(), "listId", listId)
-		return fmt.Errorf("There's a problem with your list, please try again later")
-	}
-
-	_, err = exec.Exec(`UPDATE lists SET items = items + 1 WHERE id = ?`, l_id)
+	_, err = exec.Exec(`UPDATE lists SET items = items + 1 WHERE id = $1`, l_id)
 	if err != nil {
 		logger.Logger.Error("list update error", "err", err.Error(), "authorId", authorId)
 		return fmt.Errorf("There's a problem with updating your list, please try again later")
@@ -153,7 +143,7 @@ func NewItemEx(exec Execer, text string, listId string, authorId string) error {
 
 	_, err = exec.Exec(`
 		INSERT INTO todos (text, list_id, author)
-		VALUES (?, ?, ?)`, text, l_id, a_id)
+		VALUES ($1, $2, $3)`, text, l_id, authorId)
 	if err != nil {
 		logger.Logger.Error("list insert error", "err", err.Error(), "listId", listId)
 		return fmt.Errorf("There's a problem with updating your list, please try again later")
@@ -179,13 +169,7 @@ func UpdateItemEx(exec Execer, listId string, itemId string, text string, author
 		return fmt.Errorf("There's a problem with your list, please try again later")
 	}
 
-	a_id, err := UUIDString2Bytes(authorId)
-	if err != nil {
-		logger.Logger.Error("list item UUIDString2Bytes error", "err", err.Error(), "authorId", authorId)
-		return fmt.Errorf("There's a problem with your list, please try again later")
-	}
-
-	_, err = exec.Exec(`UPDATE todos SET text = ?, author = ? WHERE (id = ? AND list_id = ?)`, text, a_id, i_id, l_id)
+	_, err = exec.Exec(`UPDATE todos SET text = $1, author = $2 WHERE (id = $3 AND list_id = $4)`, text, authorId, i_id, l_id)
 	if err != nil {
 		logger.Logger.Error("list item update error", "err", err.Error(), "itemId", itemId)
 		return fmt.Errorf("There's a problem with updating your list, please try again later")

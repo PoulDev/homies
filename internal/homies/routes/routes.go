@@ -18,7 +18,7 @@ var ( // requests per second
 
 func SetupRoutes(router *gin.Engine) {
 	authRoutes := router.Group("/auth")
-	authRoutes.Use(middlewares.GetLimiter(ratelimit.New(authRLimit)))
+	//authRoutes.Use(middlewares.GetLimiter(ratelimit.New(authRLimit)))
     authRoutes.POST("/login", authLogin)
     authRoutes.POST("/register", authRegister)
     authRoutes.POST("/renew", middlewares.AuthMiddleware, authRenew)

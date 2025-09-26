@@ -115,7 +115,7 @@ func inviteInfo(c *gin.Context) {
 		return
 	}
 
-	house, err := db.GetHouse(houseid, make([]byte, 0))
+	house, err := db.GetHouse(houseid, "")
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
