@@ -14,6 +14,7 @@ const (
 	BasicCheckError  = "basic_check_error"
 	UserInHouse      = "user_in_house"
 	NotAuthorized    = "cant_access_this"
+	NotAuthenticated = "not_authenticated"
 )
 
 type DBError struct {
