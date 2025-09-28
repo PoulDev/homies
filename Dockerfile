@@ -7,10 +7,11 @@ RUN go mod download
 
 COPY . .
 
+ENV CGO_ENABLED=0
 RUN go build -o homies-api ./cmd/homies/main.go
  
 # Stage 2: Create minimal final image
-FROM debian:bookworm-slim
+FROM alpine:latest
 WORKDIR /app
 
 COPY --from=builder /app/homies-api .
