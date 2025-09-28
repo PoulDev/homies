@@ -1,20 +1,20 @@
-# Specifies a parent image
-FROM golang:1.24.4-bullseye
- 
-# Creates an app directory to hold your app’s source code
+# Stage 1: Build the Go binary
+FROM golang:1.25.1-bookworm AS builder
+
 WORKDIR /app
- 
-# Copies everything from your root directory into /app
-COPY . .
- 
-# Installs Go dependencies
+COPY go.mod go.sum ./
 RUN go mod download
+
+COPY . .
+
+RUN go build -o homies-api ./cmd/homies/main.go
  
-# Builds your app with optional configuration
-RUN go build -o /homies-api-docker ./cmd/homies/main.go
- 
-# Tells Docker which network port your container listens on
+# Stage 2: Create minimal final image
+FROM debian:bookworm-slim
+WORKDIR /app
+
+COPY --from=builder /app/homies-api .
+
 EXPOSE 8080
- 
-# Specifies the executable command that runs when the container starts
-CMD [ "/homies-api-docker" ]
+
+CMD [ "./homies-api" ]
