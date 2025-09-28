@@ -4,6 +4,7 @@ CREATE SEQUENCE house_seq;
 CREATE TABLE houses (
   id INTEGER PRIMARY KEY NOT NULL DEFAULT nextval('house_seq'),
   name VARCHAR(255) NOT NULL,
+  owner UUID NOT NULL,
   invite VARCHAR(6) NOT NULL
 );
 
@@ -13,7 +14,6 @@ CREATE TABLE users (
   house INTEGER DEFAULT NULL,
   pwd_hash BYTEA NOT NULL,
   pwd_salt BYTEA NOT NULL,
-  is_owner BOOLEAN DEFAULT false,
   bg_color CHAR(6) NOT NULL,
   face_color CHAR(6) NOT NULL,
   face_x FLOAT NOT NULL,

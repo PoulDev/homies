@@ -38,13 +38,13 @@ func createHouse(c *gin.Context) {
 		return
 	}
 	
-	houseid, invite, err := db.NewHouse(house.Name)
+	houseid, invite, err := db.NewHouse(house.Name, jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = db.ChangeHouse(jwtdata.(jwt.MapClaims)["uid"].(string), houseid, true);
+	err = db.ChangeHouse(jwtdata.(jwt.MapClaims)["uid"].(string), houseid);
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -97,7 +97,7 @@ func joinHouse(c *gin.Context) {
 		return
 	}
 
-	err = db.ChangeHouse(jwtdata.(jwt.MapClaims)["uid"].(string), houseid, false);
+	err = db.ChangeHouse(jwtdata.(jwt.MapClaims)["uid"].(string), houseid);
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return

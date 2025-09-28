@@ -15,7 +15,6 @@ func AuthMiddleware(c *gin.Context) {
 		return
 	}
 	c.Set("data", data)
-	
 
 	op := data["op"]
 	if (op == nil || !op.(bool)) {

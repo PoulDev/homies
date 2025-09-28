@@ -2,167 +2,59 @@ package db
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
-	"strconv"
+	
+	"github.com/lib/pq"
 
 	"github.com/zibbadies/homies/internal/homies/logger"
 	"github.com/zibbadies/homies/internal/homies/models"
-	_ "github.com/lib/pq"
+	"github.com/zibbadies/homies/internal/homies/db/execers"
 )
 
-func GetUserEx(exec Execer, id string) (models.DBUser, error) {
-	var (
-		username string
-		avatar models.Avatar
-		house sql.NullInt64
-	)
-
-	err := exec.QueryRow(`
-		SELECT name, house, bg_color, face_color, face_x, face_y, left_eye_x, left_eye_y, right_eye_x, right_eye_y, bezier
-		FROM users WHERE id = $1`, id).
-		Scan(&username, &house, &avatar.BgColor, &avatar.FaceColor, &avatar.FaceX, &avatar.FaceY, &avatar.LeX, &avatar.LeY, &avatar.ReX, &avatar.ReY, &avatar.Bezier);
-
-	if (err != nil) {
-		logger.Logger.Error("select user error", "err", err.Error(), "id", id)
-		return models.DBUser{}, fmt.Errorf("There's a problem with your user, please try again later")
-	}
-
-	houseString := "null"
-	if (house.Valid) {
-		houseString = fmt.Sprintf("%d", house.Int64)
-	}
-
-	return models.DBUser{
-		Account: models.Account{
-			User: models.User{
-				UID: id,
-				Username: username,
-				Avatar: avatar,
-			},
-		},
-
-		HouseId: houseString,
-	}, nil;
-}
-
 func GetUser(id string) (models.DBUser, error) {
-	return GetUserEx(db, id)
-}
-
-
-func ChangeHouseEx(exec Execer, userId string, house string, make_owner bool) error {
-	houseid, err := strconv.Atoi(house)
-	if (err != nil) { 
-		logger.Logger.Error("ChangeHouse Atoi error", "err", err.Error(), "user", userId)
-		return fmt.Errorf("There's a problem with your house, please try again later")
+	dbuser, err := execers.GetUserEx(db, id)
+	if (err == nil) {
+		return dbuser, nil
 	}
 
-	if (make_owner) {
-		_, err = exec.Exec("UPDATE users SET house = $1, is_owner = TRUE WHERE id = $2", houseid, userId)
+	if (err == sql.ErrNoRows) {
+		return models.DBUser{}, &models.DBError{
+			Message: "We didn't find your user in the database!",
+			ErrorCode: models.UserNotFound,
+		}
+	}
+
+	if pqErr, ok := err.(*pq.Error); ok {
+		logger.Logger.Error("user get error", "err", err.Error(), "id", id, "sql_err", pqErr.Code)
 	} else {
-		_, err = exec.Exec("UPDATE users SET house = $1 WHERE id = $2", houseid, userId)
+		logger.Logger.Error("user get error", "err", err.Error(), "id", id)
 	}
 
-	if (err != nil) {
-		logger.Logger.Error("ChangeHouse update error", "err", err.Error(), "user", userId)
-		return fmt.Errorf("Internal error, please try again later")
+	return models.DBUser{}, &models.DBError{
+		Message: "There's a problem with your user, please try again later",
+		ErrorCode: "internal_error",
 	}
-
-	return nil;
 }
 
-func ChangeHouse(user string, house string, make_owner bool) error {
-	return ChangeHouseEx(db, user, house, make_owner)
-}
-
-func LeaveHouseEx(exec Execer, userId string) error {
-	_, err := exec.Exec("UPDATE users SET house = NULL WHERE id = $1", userId)
-	if (err != nil) {
-		logger.Logger.Error("LeaveHouse update error", "err", err.Error(), "user", userId)
-		return fmt.Errorf("Internal error, please try again later")
-	}
-
-	return nil;
+func ChangeHouse(user string, house string) error {
+	return execers.ChangeHouseEx(db, user, house)
 }
 
 func LeaveHouse(user string) error {
-	return LeaveHouseEx(db, user)
+	return execers.LeaveHouseEx(db, user)
 }
 
 func HouseIDByInvite(invite string) (string, error) {
-	var houseid int64
-	
-	err := db.QueryRow(`SELECT id FROM houses WHERE invite = $1`, invite).Scan(&houseid)
-	if (err != nil) {
-		logger.Logger.Error("FindHouseByInvite error", "err", err.Error(), "invite", invite)
-		return "", fmt.Errorf("Internal error, please try again later")
-	}
-	
-	return strconv.FormatInt(houseid, 10), nil;
+	return execers.HouseIDByInviteEx(db, invite)
 }
 
-
-func MakeHouseOwnerEx(exec Execer, userId string, owner bool) error {
-	_, err := exec.Exec("UPDATE users SET is_owner = $1 WHERE id = $2", owner, userId)
-	if (err != nil) {
-		logger.Logger.Error("MakeHouseOwner update error", "err", err.Error(), "user", userId)
-		return fmt.Errorf("Internal error, please try again later")
-	}
-
-	return nil;
-}
-
-func MakeHouseOwner(user string, owner bool) error {
-	return MakeHouseOwnerEx(db, user, owner)
-}
-
-func GetUserHouseEx(exec Execer, user string) (models.House, error) {
-	var (
-		tmp_houseid sql.NullInt64
-		houseid int64
-	)
-
-	err := exec.QueryRow(`SELECT house FROM users WHERE id = $1`, user).Scan(&tmp_houseid);
-
-	if (err != nil) {
-		logger.Logger.Error("user house ID retrival error", "err", err.Error())
-		return models.House{}, fmt.Errorf("Internal error, please try again later")
-	}
-
-	if (!tmp_houseid.Valid) {
-		return models.House{}, errors.New("You don't have an house")
-	} else {
-		houseid = tmp_houseid.Int64
-	}
-
-	// TODO: Use a JOIN query?
-	// good: more performant, faster
-	// bad:  If I need to update the house table, I'll have to update GetUserHouseEx and GetHouseEx
-	house, err := GetHouse(strconv.FormatInt(houseid, 10), user)
-
-	if (err != nil) {
-		logger.Logger.Error("user house name retrival error", "err", err.Error())
-		return models.House{}, fmt.Errorf("Internal error, please try again later")
-	}
-
-	return house, nil;
+func MakeHouseOwner(house string, user string, owner bool) error {
+	return execers.MakeHouseOwnerEx(db, house, user, owner)
 }
 
 func GetUserHouse(user string) (models.House, error) {
-	return GetUserHouseEx(db, user)
-}
-
-func SetAvatarEx(exec Execer, userId string, avatar models.Avatar) error {
-	_, err := exec.Exec("UPDATE users SET bg_color = $1, face_color = $2, face_x = $3, face_y = $4, left_eye_x = $5, left_eye_y = $6, right_eye_x = $7, right_eye_y = $8, bezier = $9 WHERE id = $10", avatar.BgColor, avatar.FaceColor, avatar.FaceX, avatar.FaceY, avatar.LeX, avatar.LeY, avatar.ReX, avatar.ReY, avatar.Bezier, userId)
-	if (err != nil) {
-		logger.Logger.Error("SetAvatar update error", "err", err.Error(), "user", userId)
-		return fmt.Errorf("Internal error, please try again later")
-	}
-
-	return nil;
+	return execers.GetUserHouseEx(db, user)
 }
 
 func SetAvatar(user string, avatar models.Avatar) error {
-	return SetAvatarEx(db, user, avatar)
+	return execers.SetAvatarEx(db, user, avatar)
 }

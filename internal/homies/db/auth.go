@@ -1,90 +1,55 @@
 package db
 
 import (
-	"database/sql"
-	"errors"
-	"fmt"
-
-	"github.com/zibbadies/homies/internal/homies/logger"
-	"github.com/zibbadies/homies/internal/homies/models"
-	"github.com/zibbadies/homies/pkg/homies/auth"
-
 	"github.com/lib/pq"
+	"database/sql"
+
+	"github.com/zibbadies/homies/internal/homies/db/execers"
+	"github.com/zibbadies/homies/internal/homies/models"
+	"github.com/zibbadies/homies/internal/homies/logger"
 )
 
 
-func RegisterEx(exec Execer, username string, password string, avatar models.Avatar) (string, error) {
-	hash, salt, err := auth.HashPassword(password)
-	if err != nil {
-		return "", err
+func Register(username string, password string, avatar models.Avatar) (string, *models.DBError) {
+	userid, err := execers.RegisterEx(db, username, password, avatar)
+	if (err == nil) {
+		return userid, nil
 	}
 
-	var userId string
-	err = exec.QueryRow(`
-		INSERT INTO users (
-			name, pwd_hash, pwd_salt,
-			bg_color, face_color, face_x, face_y,
-			left_eye_x, left_eye_y, right_eye_x, right_eye_y, bezier
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-		RETURNING id`,
-		username, hash, salt, 
-		avatar.BgColor, avatar.FaceColor, 
-		avatar.FaceX, avatar.FaceY, 
-		avatar.LeX, avatar.LeY,
-		avatar.ReX, avatar.ReY,
-		avatar.Bezier,
-	).Scan(&userId)
-
-	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			if (pqErr.Code == "23505") {
-				return "", fmt.Errorf("This username is already in use")
+	if pqErr, ok := err.(*pq.Error); ok {
+		if (pqErr.Code == "23505") {
+			return "", &models.DBError{
+				Message: "This username is already in use!",
+				ErrorCode: models.UsernameTaken,
 			}
 		}
+	} else {
 		logger.Logger.Error("user insert error", "err", err.Error())
-		return "", fmt.Errorf("Internal error, please try again later")
 	}
 
-	return userId, nil
+	return "", &models.DBError{
+		Message: "General error, please try again later!",
+		ErrorCode: models.InternalError,
+	}
 }
 
-func Register(username string, password string, avatar models.Avatar) (string, error) {
-	return RegisterEx(db, username, password, avatar)
-}
+func Login(name string, password string) (models.DBUser, *models.DBError) {
+	dbuser, err := execers.LoginEx(db, name, password)
 
-func LoginEx(exec Execer, name string, password string) (models.DBUser, error) {
-	var (
-		ID string
-		pwdHash []byte
-		pwdSalt []byte
-	)
+	if (err == nil) {
+		return dbuser, nil
+	}
 
-	err := exec.QueryRow("SELECT id, pwd_hash, pwd_salt FROM users WHERE name = $1", name).Scan(&ID, &pwdHash, &pwdSalt)
-	if (err != nil) {
-		if (err == sql.ErrNoRows) {
-			return models.DBUser{}, fmt.Errorf("Wrong username or password")
+	if err == sql.ErrNoRows {
+		return models.DBUser{}, &models.DBError{
+			Message: "Wrong username or password!",
+			ErrorCode: models.WrongCredentials,
 		}
-		return models.DBUser{}, err;
 	}
 
-	if (!auth.CheckPassword(password, pwdHash, pwdSalt)) {
-		return models.DBUser{}, errors.New("Wrong username or password");
+	logger.Logger.Error("user login error", "err", err.Error())
+	return models.DBUser{}, &models.DBError{
+		Message: "General error, please try again later!",
+		ErrorCode: models.InternalError,
 	}
-
-	if (err != nil) {
-		logger.Logger.Error("UUIDBytes2String error", "err", err.Error())
-		return models.DBUser{}, fmt.Errorf("there's a problem with your user, please try again later")
-	}
-
-	return models.DBUser{ // ;-;
-		Account: models.Account{
-			User: models.User{
-				UID: ID,
-			},
-		},
-	}, nil;
-}
-
-func Login(name string, password string) (models.DBUser, error) {
-	return LoginEx(db, name, password)
 }
