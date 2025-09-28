@@ -11,10 +11,10 @@ func AuthMiddleware(c *gin.Context) {
 	token := c.GetHeader("Authorization")
 	data, err := auth.CheckToken(token)
 	if (err != nil) {
-		c.JSON(http.StatusUnauthorized, models.DBError{
+		c.JSON(http.StatusUnauthorized, gin.H{"error": models.DBError{
 			Message:   "You are not authenticated",
 			ErrorCode: models.NotAuthenticated,
-		})
+		}})
 		c.Abort()
 		return
 	}
