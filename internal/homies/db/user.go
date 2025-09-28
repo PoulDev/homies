@@ -35,26 +35,139 @@ func GetUser(id string) (models.DBUser, error) {
 	}
 }
 
+
 func ChangeHouse(user string, house string) error {
-	return execers.ChangeHouseEx(db, user, house)
+	err := execers.ChangeHouseEx(db, user, house)
+
+	if err == nil {
+		return nil
+	}
+
+	if pqErr, ok := err.(*pq.Error); ok {
+		logger.Logger.Error("change house error", "err", err.Error(), "sql_err", pqErr.Code)
+	} else {
+		logger.Logger.Error("change house error", "err", err.Error())
+	}
+
+	return &models.DBError{
+		Message:   "General error, please try again later!",
+		ErrorCode: models.InternalError,
+	}
 }
 
 func LeaveHouse(user string) error {
-	return execers.LeaveHouseEx(db, user)
+	err := execers.LeaveHouseEx(db, user)
+
+	if err == nil {
+		return nil
+	}
+
+	if pqErr, ok := err.(*pq.Error); ok {
+		logger.Logger.Error("leave house error", "err", err.Error(), "sql_err", pqErr.Code)
+	} else {
+		logger.Logger.Error("leave house error", "err", err.Error())
+	}
+
+	return &models.DBError{
+		Message:   "General error, please try again later!",
+		ErrorCode: models.InternalError,
+	}
 }
 
 func HouseIDByInvite(invite string) (string, error) {
-	return execers.HouseIDByInviteEx(db, invite)
+	houseID, err := execers.HouseIDByInviteEx(db, invite)
+
+	if err == nil {
+		return houseID, nil
+	}
+
+	if err == sql.ErrNoRows {
+		return "", &models.DBError{
+			Message:   "Invalid or expired invite code!",
+			ErrorCode: models.InviteNotFound,
+		}
+	}
+
+	if pqErr, ok := err.(*pq.Error); ok {
+		logger.Logger.Error("house by invite error", "err", err.Error(), "sql_err", pqErr.Code)
+	} else {
+		logger.Logger.Error("house by invite error", "err", err.Error())
+	}
+
+	return "", &models.DBError{
+		Message:   "General error, please try again later!",
+		ErrorCode: models.InternalError,
+	}
 }
 
-func MakeHouseOwner(house string, user string, owner bool) error {
-	return execers.MakeHouseOwnerEx(db, house, user, owner)
+func MakeHouseOwner(house string, user string) error {
+	err := execers.MakeHouseOwnerEx(db, house, user)
+
+	if err == nil {
+		return nil
+	}
+
+	if pqErr, ok := err.(*pq.Error); ok {
+		logger.Logger.Error("make house owner error", "err", err.Error(), "sql_err", pqErr.Code)
+	} else {
+		logger.Logger.Error("make house owner error", "err", err.Error())
+	}
+
+	return &models.DBError{
+		Message:   "General error, please try again later!",
+		ErrorCode: models.InternalError,
+	}
 }
 
 func GetUserHouse(user string) (models.House, error) {
-	return execers.GetUserHouseEx(db, user)
+	house, err := execers.GetUserHouseEx(db, user)
+
+	if err == nil {
+		return house, nil
+	}
+
+	if err.Error() == "no_house" {
+		return models.House{}, &models.DBError{
+			Message:   "This user is not in a house!",
+			ErrorCode: models.UserNotInHouse,
+		}
+	}
+
+	if err == sql.ErrNoRows {
+		return models.House{}, &models.DBError{
+			Message: "House not found in the database!",
+			ErrorCode: models.HouseNotFound,
+		}
+	}
+
+	if pqErr, ok := err.(*pq.Error); ok {
+		logger.Logger.Error("get user house error", "err", err.Error(), "sql_err", pqErr.Code)
+	} else {
+		logger.Logger.Error("get user house error", "err", err.Error())
+	}
+
+	return models.House{}, &models.DBError{
+		Message:   "General error, please try again later!",
+		ErrorCode: models.InternalError,
+	}
 }
 
 func SetAvatar(user string, avatar models.Avatar) error {
-	return execers.SetAvatarEx(db, user, avatar)
+	err := execers.SetAvatarEx(db, user, avatar)
+
+	if err == nil {
+		return nil
+	}
+
+	if pqErr, ok := err.(*pq.Error); ok {
+		logger.Logger.Error("set avatar error", "err", err.Error(), "sql_err", pqErr.Code)
+	} else {
+		logger.Logger.Error("set avatar error", "err", err.Error())
+	}
+
+	return &models.DBError{
+		Message:   "General error, please try again later!",
+		ErrorCode: models.InternalError,
+	}
 }
+

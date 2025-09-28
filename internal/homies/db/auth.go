@@ -10,7 +10,7 @@ import (
 )
 
 
-func Register(username string, password string, avatar models.Avatar) (string, *models.DBError) {
+func Register(username string, password string, avatar models.Avatar) (string, error) {
 	userid, err := execers.RegisterEx(db, username, password, avatar)
 	if (err == nil) {
 		return userid, nil
@@ -33,7 +33,7 @@ func Register(username string, password string, avatar models.Avatar) (string, *
 	}
 }
 
-func Login(name string, password string) (models.DBUser, *models.DBError) {
+func Login(name string, password string) (models.DBUser, error) {
 	dbuser, err := execers.LoginEx(db, name, password)
 
 	if (err == nil) {

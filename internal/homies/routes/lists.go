@@ -1,10 +1,11 @@
 package routes
 
 import (
-	"github.com/zibbadies/homies/internal/homies/db"
-	"github.com/zibbadies/homies/internal/homies/checks"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"github.com/zibbadies/homies/internal/homies/checks"
+	"github.com/zibbadies/homies/internal/homies/db"
+	"github.com/zibbadies/homies/internal/homies/models"
 )
 
 type ItemInput struct {
@@ -16,13 +17,13 @@ func getLists(c *gin.Context) {
 	
 	dbuser, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	lists, err := db.GetLists(dbuser.HouseId)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
@@ -37,13 +38,16 @@ func newItem(c *gin.Context) {
 	var item ItemInput;
 	err := c.ShouldBind(&item);
 	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
+		c.JSON(400, gin.H{"error": models.DBError{
+			Message: "Invalid JSON Data!",
+			ErrorCode: models.JsonFormatError,
+		}})
 		return
 	}
 
 	err = checks.Check("list_item_text", item.Text)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
@@ -51,24 +55,27 @@ func newItem(c *gin.Context) {
 
 	list_hid, err := db.GetListHID(list_id)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	dbuser, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	if dbuser.HouseId != list_hid {
-		c.JSON(400, gin.H{"error": "You can't access other people lists!"})
+		c.JSON(403, gin.H{"error": models.DBError{
+			Message: "You can't access other people lists!",
+			ErrorCode: models.NotAuthorized,
+		}})
 		return
 	}
 
 	err = db.NewItem(item.Text, list_id, jwtdata.(jwt.MapClaims)["uid"].(string));
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
@@ -82,24 +89,27 @@ func getItems(c *gin.Context) {
 
 	list_hid, err := db.GetListHID(id_param)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	dbuser, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	if dbuser.HouseId != list_hid {
-		c.JSON(400, gin.H{"error": "You can't access other people lists!"})
+		c.JSON(403, gin.H{"error": models.DBError{
+			Message: "You can't access other people lists!",
+			ErrorCode: models.NotAuthorized,
+		}})
 		return
 	}
 
 	items, err := db.GetItems(id_param)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
@@ -114,13 +124,16 @@ func updateItem(c *gin.Context) {
 	var item ItemInput;
 	err := c.ShouldBind(&item);
 	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
+		c.JSON(400, gin.H{"error": models.DBError{
+			Message: "Invalid JSON Data!",
+			ErrorCode: models.JsonFormatError,
+		}})
 		return
 	}
 
 	err = checks.Check("list_item_text", item.Text)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
@@ -132,24 +145,27 @@ func updateItem(c *gin.Context) {
 
 	dbuser, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	list_hid, err := db.GetListHID(list_id)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	if dbuser.HouseId != list_hid {
-		c.JSON(400, gin.H{"error": "You can't access this list!"})
+		c.JSON(403, gin.H{"error": models.DBError{
+			Message: "You can't access this list!",
+			ErrorCode: models.NotAuthorized,
+		}})
 		return
 	}
 
 	err = db.UpdateItem(list_id, item_id, item.Text, jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 

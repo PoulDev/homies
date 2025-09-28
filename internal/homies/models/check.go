@@ -10,3 +10,4 @@ type Checker struct {
 	Check
 	Checker func(string) error
 }
+

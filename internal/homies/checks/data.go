@@ -84,13 +84,22 @@ func BasicStringCheck(key string) func(string) error {
 	return func(value string) error {
 		checker, ok := CheckersData[key]
 		if (!ok) {
-			return fmt.Errorf("Internal error: Checker %s not found!", key)
+			return &models.CheckError{
+				Message: fmt.Sprintf("Internal error: Checker %s not found!", key),
+				ErrorCode: models.InternalError,
+			}
 		}
 
 		if (len(value) < checker.MinLength) {
-			return fmt.Errorf("Your %s must be at least %d characters long!", checker.FriendlyName, checker.MinLength);
+			return &models.CheckError{
+				Message: fmt.Sprintf("Your %s must be at least %d characters long!", checker.FriendlyName, checker.MinLength),
+				ErrorCode: models.BasicCheckError,
+			}
 		} else if (len(value) >= checker.MaxLength) {
-			return fmt.Errorf("Your %s is too long! max %d characters.", checker.FriendlyName, checker.MaxLength);
+			return &models.CheckError{
+				Message: fmt.Sprintf("Your %s is too long! max %d characters.", checker.FriendlyName, checker.MaxLength),
+				ErrorCode: models.BasicCheckError,
+			}
 		}
 
 		return nil;
@@ -101,11 +110,17 @@ func BasicRegexCheck(key string, regex *regexp.Regexp) func(string) error {
 	return func(value string) error {
 		checker, ok := CheckersData[key]
 		if (!ok) {
-			return fmt.Errorf("Internal error: Checker %s not found!", key)
+			return &models.CheckError{
+				Message: fmt.Sprintf("Internal error: Checker %s not found!", key),
+				ErrorCode: models.InternalError,
+			}
 		}
 
 		if (!regex.MatchString(value)) {
-			return fmt.Errorf("Your %s is not valid!", checker.FriendlyName);
+			return &models.CheckError{
+				Message: fmt.Sprintf("Your %s is not valid!", checker.FriendlyName),
+				ErrorCode: models.BasicCheckError,
+			}
 		}
 
 		return nil;

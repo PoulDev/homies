@@ -7,12 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 
-	"github.com/zibbadies/homies/pkg/homies/auth"
-	"github.com/zibbadies/homies/pkg/homies/avatar"
 	"github.com/zibbadies/homies/internal/homies/checks"
+	"github.com/zibbadies/homies/internal/homies/config"
 	"github.com/zibbadies/homies/internal/homies/db"
 	"github.com/zibbadies/homies/internal/homies/logger"
-	"github.com/zibbadies/homies/internal/homies/config"
+	"github.com/zibbadies/homies/internal/homies/models"
+	"github.com/zibbadies/homies/pkg/homies/auth"
+	"github.com/zibbadies/homies/pkg/homies/avatar"
 )
 
 type JUser struct {
@@ -33,7 +34,10 @@ func authRegister(c *gin.Context) {
 	var user JUser;
 	err := c.ShouldBind(&user)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
+		c.JSON(400, gin.H{"error": models.DBError{
+			Message: "Invalid JSON Data!",
+			ErrorCode: models.JsonFormatError,
+		}})
 		return
 	}
 
@@ -41,13 +45,13 @@ func authRegister(c *gin.Context) {
 
 	err = checks.Check("username", user.Username)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	err = checks.Check("password", user.Password)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
@@ -57,7 +61,7 @@ func authRegister(c *gin.Context) {
 
 	uid, err := db.Register(user.Username, user.Password, avatar.RandAvatar())
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
@@ -66,7 +70,10 @@ func authRegister(c *gin.Context) {
 
 	if (err != nil) {
 		logger.Logger.Error("JWT error", "err", err.Error())
-		c.JSON(400, gin.H{"error": "Internal error, please try again later"})
+		c.JSON(500, models.DBError{
+			Message: "Internal error, please try again later",
+			ErrorCode: models.InternalError,
+		})
 		return
 	}
 
@@ -77,20 +84,23 @@ func authLogin(c *gin.Context) {
 	var user JUser;
 	err := c.ShouldBind(&user)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
+		c.JSON(400, gin.H{"error": models.DBError{
+			Message: "Invalid JSON Data!",
+			ErrorCode: models.JsonFormatError,
+		}})
 		return
 	}
 
 	dbuser, err := db.Login(user.Username, user.Password)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	tokenString, err := getJWT(dbuser.UID)
 
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": gin.H{"message": err.Error()}})
 		return
 	}
 
@@ -105,7 +115,7 @@ func authRenew(c *gin.Context) {
 	// Controllo che l'account non sia stato rimosso dal DB [ vedi DATABASE.md ]
 	_, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
@@ -114,6 +124,8 @@ func authRenew(c *gin.Context) {
 
 	// l'utente ha 7 giorni per rinnovare il token
 	if exp.Sub(now).Hours() > (24 * 7) {
+		// This error shouldn't be formatted like this
+		// but this endpoint will be fucked up anyway sooner or later.
 		c.JSON(400, gin.H{"error": "This token will still be valid for some days, please retry later."})
 		return
 	}

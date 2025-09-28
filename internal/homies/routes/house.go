@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/zibbadies/homies/internal/homies/db"
 	"github.com/zibbadies/homies/internal/homies/checks"
+	"github.com/zibbadies/homies/internal/homies/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
@@ -16,37 +17,43 @@ func createHouse(c *gin.Context) {
 
 	user, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	if user.HouseId != "null" {
-		c.JSON(400, gin.H{"error": "You already have a house!"})
+		c.JSON(400, gin.H{"error": models.DBError{
+			Message: "You already have a house!",
+			ErrorCode: models.UserInHouse,
+		}})
 		return
 	}
 
 	var house JHouse;
 	err = c.ShouldBind(&house)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
+		c.JSON(400, gin.H{"error": models.DBError{
+			Message: "Invalid JSON Data!",
+			ErrorCode: models.JsonFormatError,
+		}})
 		return
 	}
 
 	err = checks.Check("house_name", house.Name)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 	
 	houseid, invite, err := db.NewHouse(house.Name, jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	err = db.ChangeHouse(jwtdata.(jwt.MapClaims)["uid"].(string), houseid);
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
@@ -57,7 +64,10 @@ func createHouse(c *gin.Context) {
 
 func userHouse(c *gin.Context) {
 	if (c.Param("id") != "me") {
-		c.JSON(400, gin.H{"error": "You can't see other people houses!"})
+		c.JSON(403, gin.H{"error": models.DBError{
+			Message: "You can't see other people houses!",
+			ErrorCode: models.NotAuthorized,
+		}})
 		return
 	}
 
@@ -65,7 +75,7 @@ func userHouse(c *gin.Context) {
 
 	house, err := db.GetUserHouse(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
@@ -82,24 +92,27 @@ func joinHouse(c *gin.Context) {
 
 	user, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	if user.HouseId != "null" {
-		c.JSON(400, gin.H{"error": "You already have a house!"})
+		c.JSON(400, gin.H{"error": models.DBError{
+			Message: "You already have a house!",
+			ErrorCode: models.UserInHouse,
+		}})
 		return
 	}
 
 	houseid, err := db.HouseIDByInvite(invite)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	err = db.ChangeHouse(jwtdata.(jwt.MapClaims)["uid"].(string), houseid);
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
@@ -111,13 +124,13 @@ func inviteInfo(c *gin.Context) {
 
 	houseid, err := db.HouseIDByInvite(invite)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	house, err := db.GetHouse(houseid, "")
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
@@ -129,7 +142,7 @@ func leaveHouse(c *gin.Context) {
 
 	err := db.LeaveHouse(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 

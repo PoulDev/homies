@@ -18,13 +18,16 @@ func userInfo(c *gin.Context) {
 	if (id_param == "me") {
 		uid = jwtdata.(jwt.MapClaims)["uid"].(string)
 	} else { // let's avoid it for now...
-		c.JSON(400, gin.H{"error": "You can't see other people info!"})
+		c.JSON(403, gin.H{"error": models.DBError{
+			Message: "You can't see other people's info!",
+			ErrorCode: models.NotAuthorized,
+		}})
 		return
 	}
 
 	dbuser, err := db.GetUser(uid)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
@@ -36,14 +39,13 @@ func homeOverview(c *gin.Context) {
 
 	user, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	house, err := db.GetUserHouse(jwtdata.(jwt.MapClaims)["uid"].(string))
-
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
@@ -78,23 +80,26 @@ func setAavatar(c *gin.Context) {
 	var avatar models.Avatar;
 	err := c.ShouldBind(&avatar)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": "Invalid JSON Data!"})
+		c.JSON(400, gin.H{"error": models.DBError{
+			Message: "Invalid JSON Data!",
+			ErrorCode: models.JsonFormatError,
+		}})
 		return
 	}
 
 	if err = checks.Check("color", avatar.BgColor); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	if err = checks.Check("bezier", avatar.Bezier); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 
 	err = db.SetAvatar(jwtdata.(jwt.MapClaims)["uid"].(string), avatar)
 	if (err != nil) {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err})
 		return
 	}
 

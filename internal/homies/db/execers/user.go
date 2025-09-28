@@ -97,8 +97,8 @@ func HouseIDByInviteEx(exec Execer, invite string) (string, error) {
 }
 
 
-func MakeHouseOwnerEx(exec Execer, houseId string, userId string, owner bool) error {
-	_, err := exec.Exec("UPDATE users SET is_owner = $1 WHERE id = $2", owner, userId)
+func MakeHouseOwnerEx(exec Execer, houseId string, userId string) error {
+	_, err := exec.Exec("UPDATE houses SET owner = $1 WHERE id = $2", userId, houseId)
 	if (err != nil) {
 		logger.Logger.Error("MakeHouseOwner update error", "err", err.Error(), "user", userId)
 		return fmt.Errorf("Internal error, please try again later")
@@ -121,7 +121,7 @@ func GetUserHouseEx(exec Execer, user string) (models.House, error) {
 	}
 
 	if (!tmp_houseid.Valid) {
-		return models.House{}, errors.New("You don't have an house")
+		return models.House{}, errors.New("no_house")
 	} else {
 		houseid = tmp_houseid.Int64
 	}
