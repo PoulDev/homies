@@ -48,9 +48,6 @@ func LoginEx(exec Execer, name string, password string) (models.DBUser, error) {
 
 	err := exec.QueryRow("SELECT id, pwd_hash, pwd_salt FROM users WHERE name = $1", name).Scan(&ID, &pwdHash, &pwdSalt)
 	if (err != nil) {
-		if (err == sql.ErrNoRows) {
-			return models.DBUser{}, fmt.Errorf("Wrong username or password")
-		}
 		return models.DBUser{}, err;
 	}
 
