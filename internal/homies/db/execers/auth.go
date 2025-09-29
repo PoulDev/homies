@@ -1,9 +1,7 @@
 package execers
 
 import (
-	"database/sql"
 	"errors"
-	"fmt"
 
 	"github.com/zibbadies/homies/internal/homies/models"
 	"github.com/zibbadies/homies/pkg/homies/auth"
