@@ -55,7 +55,7 @@ func LoginEx(exec Execer, name string, password string) (models.DBUser, error) {
 	}
 
 	if (!auth.CheckPassword(password, pwdHash, pwdSalt)) {
-		return models.DBUser{}, errors.New("Wrong username or password");
+		return models.DBUser{}, errors.New("wrong_pwd");
 	}
 
 	return models.DBUser{ // ;-;

@@ -40,7 +40,7 @@ func Login(name string, password string) (models.DBUser, error) {
 		return dbuser, nil
 	}
 
-	if err == sql.ErrNoRows {
+	if err == sql.ErrNoRows || err.Error() == "wrong_pwd" {
 		return models.DBUser{}, &models.DBError{
 			Message: "Wrong username or password!",
 			ErrorCode: models.WrongCredentials,
