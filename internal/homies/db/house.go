@@ -11,7 +11,7 @@ import (
 
 // Returns the house ID & invite code
 func NewHouse(name string, owner string) (string, string, error) {
-	houseid, invite, err := execers.NewHouseEx(name, owner)
+	houseid, invite, err := execers.NewHouseEx(db, name, owner)
 	
 	if (err == nil) {
 		return houseid, invite, nil

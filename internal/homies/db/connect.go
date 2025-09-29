@@ -13,12 +13,6 @@ var (
 	db *sql.DB
 )
 
-type Execer interface {
-    Exec(query string, args ...any) (sql.Result, error)
-    Query(query string, args ...any) (*sql.Rows, error)
-    QueryRow(query string, args ...any) *sql.Row
-}
-
 func ConnectDatabase() error {
     psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", config.DBHost, config.DBPort, config.DBUser, config.DBPassword, config.DBName)
 

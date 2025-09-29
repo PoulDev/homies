@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"crypto/rand"
 	"math/big"
+	"database/sql"
 	"github.com/lib/pq"
 
 	"github.com/zibbadies/homies/internal/homies/logger"
@@ -27,8 +28,8 @@ func GenerateCode() (string, error) {
 
 // Returns the house ID & invite code
 // NO EXECER FOR THIS ONE
-func NewHouseEx(name string, owner string) (string, string, error) {
-    tx, err := db.Begin()
+func NewHouseEx(exec *sql.DB, name string, owner string) (string, string, error) {
+    tx, err := exec.Begin()
     if err != nil {return "", "", err}
     defer func (){
 		if p := recover(); p != nil {
