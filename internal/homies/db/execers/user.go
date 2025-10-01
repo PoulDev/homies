@@ -35,7 +35,7 @@ func GetUserEx(exec Execer, id string) (models.DBUser, error) {
 	if (err != nil) {
 		logger.Logger.Error("select user error", "err", err.Error(), "id", id)
 
-		return models.DBUser{}, fmt.Errorf("There's a problem with your user, please try again later")
+		return models.DBUser{}, err
 	}
 
 	houseString := "null"
