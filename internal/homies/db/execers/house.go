@@ -122,7 +122,7 @@ func GetHouseEx(exec Execer, house string, skipUser string) (models.House, error
 
 		if err := rows.Scan(&user.UID, &user.Username, &user.Avatar.BgColor, &user.Avatar.FaceColor, &user.Avatar.FaceX, &user.Avatar.FaceY, &user.Avatar.LeX, &user.Avatar.LeY, &user.Avatar.ReX, &user.Avatar.ReY, &user.Avatar.Bezier); err != nil {
 			logger.Logger.Error("list row scan error", "err", err.Error(), "houseId", houseid)
-			return models.House{}, fmt.Errorf("There's a problem with your house, please try again later")
+			return models.House{}, err
 		}
 
 		users = append(users, user)
@@ -130,7 +130,7 @@ func GetHouseEx(exec Execer, house string, skipUser string) (models.House, error
 
 	if err := rows.Err(); err != nil {
 		logger.Logger.Error("list rows error", "err", err.Error(), "houseId", houseid)
-		return models.House{}, fmt.Errorf("There's a problem with your house, please try again later")
+		return models.House{}, err
 	}
 
 	resHouse.Members = users

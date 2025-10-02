@@ -60,7 +60,7 @@ func ChangeHouseEx(exec Execer, userId string, house string) error {
 	houseid, err := strconv.Atoi(house)
 	if (err != nil) { 
 		logger.Logger.Error("ChangeHouse Atoi error", "err", err.Error(), "user", userId)
-		return fmt.Errorf("There's a problem with your house, please try again later")
+		return err
 	}
 
 
@@ -68,7 +68,7 @@ func ChangeHouseEx(exec Execer, userId string, house string) error {
 
 	if (err != nil) {
 		logger.Logger.Error("ChangeHouse update error", "err", err.Error(), "user", userId)
-		return fmt.Errorf("Internal error, please try again later")
+		return err
 	}
 
 	return nil;
@@ -78,7 +78,7 @@ func LeaveHouseEx(exec Execer, userId string) error {
 	_, err := exec.Exec("UPDATE users SET house = NULL WHERE id = $1", userId)
 	if (err != nil) {
 		logger.Logger.Error("LeaveHouse update error", "err", err.Error(), "user", userId)
-		return fmt.Errorf("Internal error, please try again later")
+		return err
 	}
 
 	return nil;
@@ -90,7 +90,7 @@ func HouseIDByInviteEx(exec Execer, invite string) (string, error) {
 	err := exec.QueryRow(`SELECT id FROM houses WHERE invite = $1`, invite).Scan(&houseid)
 	if (err != nil) {
 		logger.Logger.Error("FindHouseByInvite error", "err", err.Error(), "invite", invite)
-		return "", fmt.Errorf("Internal error, please try again later")
+		return "", err
 	}
 	
 	return strconv.FormatInt(houseid, 10), nil;
@@ -101,7 +101,7 @@ func MakeHouseOwnerEx(exec Execer, houseId string, userId string) error {
 	_, err := exec.Exec("UPDATE houses SET owner = $1 WHERE id = $2", userId, houseId)
 	if (err != nil) {
 		logger.Logger.Error("MakeHouseOwner update error", "err", err.Error(), "user", userId)
-		return fmt.Errorf("Internal error, please try again later")
+		return err
 	}
 
 	return nil;
@@ -117,7 +117,7 @@ func GetUserHouseEx(exec Execer, user string) (models.House, error) {
 
 	if (err != nil) {
 		logger.Logger.Error("user house ID retrival error", "err", err.Error())
-		return models.House{}, fmt.Errorf("Internal error, please try again later")
+		return models.House{}, err
 	}
 
 	if (!tmp_houseid.Valid) {
@@ -133,7 +133,7 @@ func GetUserHouseEx(exec Execer, user string) (models.House, error) {
 
 	if (err != nil) {
 		logger.Logger.Error("user house name retrival error", "err", err.Error())
-		return models.House{}, fmt.Errorf("Internal error, please try again later")
+		return models.House{}, err
 	}
 
 	return house, nil;
@@ -143,7 +143,7 @@ func SetAvatarEx(exec Execer, userId string, avatar models.Avatar) error {
 	_, err := exec.Exec("UPDATE users SET bg_color = $1, face_color = $2, face_x = $3, face_y = $4, left_eye_x = $5, left_eye_y = $6, right_eye_x = $7, right_eye_y = $8, bezier = $9 WHERE id = $10", avatar.BgColor, avatar.FaceColor, avatar.FaceX, avatar.FaceY, avatar.LeX, avatar.LeY, avatar.ReX, avatar.ReY, avatar.Bezier, userId)
 	if (err != nil) {
 		logger.Logger.Error("SetAvatar update error", "err", err.Error(), "user", userId)
-		return fmt.Errorf("Internal error, please try again later")
+		return err
 	}
 
 	return nil;
