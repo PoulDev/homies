@@ -143,7 +143,7 @@ func GetUserHouse(user string) (models.House, error) {
 		return house, nil
 	}
 
-	if err.Error() == "no_house" {
+	if err.Error() == models.UserNotInHouse {
 		return models.House{}, &models.DBError{
 			Message:   "This user is not in a house!",
 			ErrorCode: models.UserNotInHouse,
