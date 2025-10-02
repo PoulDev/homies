@@ -1,20 +1,22 @@
 package models
 
 const (
-	UserNotFound     = "user_not_found"
-	HouseNotFound    = "house_not_found"
-	InviteNotFound   = "invite_not_found"
-	UserNotInHouse   = "user_not_in_house"
-	WrongCredentials = "wrong_credentials"
-	InternalError    = "internal_error"
-	UsernameTaken    = "username_taken"
-	ListNotFound     = "list_not_found"
-	ItemNotFound     = "item_not_found"
-	JsonFormatError  = "json_format_error"
-	BasicCheckError  = "basic_check_error"
-	UserInHouse      = "user_in_house"
-	NotAuthorized    = "cant_access_this"
-	NotAuthenticated = "not_authenticated"
+	UserNotFound          = "user_not_found"
+	HouseNotFound         = "house_not_found"
+	InviteNotFound        = "invite_not_found"
+	UserNotInHouse        = "user_not_in_house"
+	WrongCredentials      = "wrong_credentials"
+	InternalError         = "internal_error"
+	UsernameTaken         = "username_taken"
+	ListNotFound          = "list_not_found"
+	ItemNotFound          = "item_not_found"
+	JsonFormatError       = "json_format_error"
+	BasicCheckError       = "basic_check_error"
+	UserInHouse           = "user_in_house"
+	NotAuthorized         = "cant_access_this"
+	NotAuthenticated      = "not_authenticated"
+	HouseCantLeaveMembers = "house_cant_leave_minimum_members"
+	HouseCantLeaveOwner   = "house_cant_leave_owner"
 )
 
 type DBError struct {

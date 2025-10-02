@@ -121,7 +121,7 @@ func GetUserHouseEx(exec Execer, user string) (models.House, error) {
 	}
 
 	if (!tmp_houseid.Valid) {
-		return models.House{}, errors.New("no_house")
+		return models.House{}, errors.New(models.UserNotInHouse)
 	} else {
 		houseid = tmp_houseid.Int64
 	}

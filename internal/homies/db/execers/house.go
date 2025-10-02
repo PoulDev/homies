@@ -1,7 +1,6 @@
 package execers
 
 import (
-	"fmt"
 	"strconv"
 	"crypto/rand"
 	"math/big"
@@ -47,7 +46,7 @@ func NewHouseEx(exec *sql.DB, name string, owner string) (string, string, error)
 		invite, err = GenerateCode()
 		if (err != nil) {
 			logger.Logger.Error("house insert error", "err", err.Error())
-			return "", "", fmt.Errorf("Internal error, please try again later")
+			return "", "", err
 		}
 
 		err = tx.QueryRow(`
@@ -77,13 +76,13 @@ func NewHouseEx(exec *sql.DB, name string, owner string) (string, string, error)
 	err = NewListEx(tx, houseIdStr, "shopping");
 	if err != nil {
 		logger.Logger.Error("shopping list insert error", "err", err.Error())
-		return "", "", fmt.Errorf("Internal error, please try again later")
+		return "", "", err
 	}
 
 	err = NewListEx(tx, houseIdStr, "todo");
 	if err != nil {
 		logger.Logger.Error("todo list insert error", "err", err.Error())
-		return "", "", fmt.Errorf("Internal error, please try again later")
+		return "", "", err
 	}
 
 	return strconv.FormatInt(houseId, 10), invite, nil;
@@ -92,17 +91,16 @@ func NewHouseEx(exec *sql.DB, name string, owner string) (string, string, error)
 func GetHouseEx(exec Execer, house string, skipUser string) (models.House, error) {
 	var resHouse models.House
 	var houseid int64
-
-	if (house == "null") {
-		return models.House{}, fmt.Errorf("You don't have an house")
-	}
+	var owner int64
 
 	logger.Logger.Info("get house", "house", house)
-	err := exec.QueryRow("SELECT id, invite, name FROM houses WHERE id = $1", house).Scan(&houseid, &resHouse.Invite, &resHouse.Name)
+	err := exec.QueryRow("SELECT id, invite, name, owner FROM houses WHERE id = $1", house).Scan(&houseid, &resHouse.Invite, &resHouse.Name, &owner)
 	if (err != nil) {
 		logger.Logger.Error("house get error", "err", err.Error())
-		return models.House{}, fmt.Errorf("Internal error, please try again later")
+		return models.House{}, err
 	}
+
+	resHouse.Owner = strconv.FormatInt(owner, 10)
 
 	// Retrive house Members
 	// Why this must be a mess every fucking time?
@@ -113,7 +111,7 @@ func GetHouseEx(exec Execer, house string, skipUser string) (models.House, error
 
 	if err != nil {
 		logger.Logger.Error("list DB select error", "err", err.Error(), "houseId", houseid)
-		return models.House{}, fmt.Errorf("Internal error, please try again later")
+		return models.House{}, err
 	}
 
 	var users = make([]models.User, 0);

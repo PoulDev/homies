@@ -140,7 +140,32 @@ func inviteInfo(c *gin.Context) {
 func leaveHouse(c *gin.Context) {
 	jwtdata, _ := c.Get("data")
 
-	err := db.LeaveHouse(jwtdata.(jwt.MapClaims)["uid"].(string))
+	house, err := db.GetUserHouse(jwtdata.(jwt.MapClaims)["uid"].(string))
+	if err != nil {
+		c.JSON(400, gin.H{"error": models.DBError{
+			Message:   "House not found",
+			ErrorCode: models.HouseNotFound,
+		}})
+		return
+	}
+
+	if (house.Owner == jwtdata.(jwt.MapClaims)["uid"].(string)) {
+		c.JSON(400, gin.H{"error": models.DBError{
+			Message: "You are the owner of this house, you can't leave it!",
+			ErrorCode: models.HouseCantLeaveOwner,
+		}})
+		return
+	}
+
+	if (len(house.Members) == 1) {
+		c.JSON(400, gin.H{"error": models.DBError{
+			Message: "You can't leave a house with only you inside! delete it first",
+			ErrorCode: models.HouseCantLeaveMembers,
+		}})
+		return
+	}
+
+	err = db.LeaveHouse(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err})
 		return

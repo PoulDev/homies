@@ -43,6 +43,13 @@ func GetHouse(house string, skipUser string) (models.House, error) {
 		}
 	}
 
+	if err.Error() == models.UserNotInHouse {
+		return models.House{}, &models.DBError{
+			Message: "You're not in a house!",
+			ErrorCode: models.UserNotInHouse,
+		}
+	}
+
 	if pqErr, ok := err.(*pq.Error); ok {
 		logger.Logger.Error("house get error", "err", err.Error(), "sql_err", pqErr.Code)
 	} else {
