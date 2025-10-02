@@ -15,10 +15,10 @@ type JHouse struct {
 func createHouse(c *gin.Context) {
 	jwtdata, _ := c.Get("data")
 
-	user, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
+	user, err := db.GetUserMe(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err})
-		return
+		return;
 	}
 
 	if user.HouseId != "null" {
@@ -75,8 +75,17 @@ func userHouse(c *gin.Context) {
 
 	house, err := db.GetUserHouse(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
+		if dberr, ok := err.(models.DBError); ok {
+			if dberr.ErrorCode == models.UserNotFound {
+				c.JSON(404, gin.H{"error": &models.DBError{
+					Message: "Your user was not found in the database!",
+					ErrorCode: models.NotAuthenticated,
+				}})
+				return
+			}
+		}
 		c.JSON(400, gin.H{"error": err})
-		return
+		return;
 	}
 
 	c.JSON(200, gin.H{
@@ -90,10 +99,10 @@ func joinHouse(c *gin.Context) {
 	jwtdata, _ := c.Get("data")
 	invite := c.Param("invite")
 
-	user, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
+	user, err := db.GetUserMe(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err})
-		return
+		return;
 	}
 
 	if user.HouseId != "null" {
@@ -141,12 +150,18 @@ func leaveHouse(c *gin.Context) {
 	jwtdata, _ := c.Get("data")
 
 	house, err := db.GetUserHouse(jwtdata.(jwt.MapClaims)["uid"].(string))
-	if err != nil {
-		c.JSON(400, gin.H{"error": models.DBError{
-			Message:   "House not found",
-			ErrorCode: models.HouseNotFound,
-		}})
-		return
+	if (err != nil) {
+		if dberr, ok := err.(models.DBError); ok {
+			if dberr.ErrorCode == models.UserNotFound {
+				c.JSON(404, gin.H{"error": &models.DBError{
+					Message: "Your user was not found in the database!",
+					ErrorCode: models.NotAuthenticated,
+				}})
+				return
+			}
+		}
+		c.JSON(400, gin.H{"error": err})
+		return;
 	}
 
 	if (house.Owner == jwtdata.(jwt.MapClaims)["uid"].(string)) {
