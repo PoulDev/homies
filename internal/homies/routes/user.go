@@ -14,7 +14,6 @@ func userInfo(c *gin.Context) {
 	jwtdata, _ := c.Get("data")
 
 	uid := id_param
-
 	if (id_param == "me") {
 		uid = jwtdata.(jwt.MapClaims)["uid"].(string)
 	} else { // let's avoid it for now...
@@ -67,7 +66,7 @@ func generateAvatar(c *gin.Context) {
 	c.JSON(200, avatar);
 }
 
-func setAavatar(c *gin.Context) {
+func setAvatar(c *gin.Context) {
 	/*
 		A funny guy could just send handmade values to this endpoint to get some *interesting* avatars,
 		if he does that, well, good for him, he earned it.

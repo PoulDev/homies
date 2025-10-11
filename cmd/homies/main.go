@@ -25,6 +25,7 @@ func main() {
 	}
 
 	router := gin.Default()
+	gin.Recovery()
 	routes.SetupRoutes(router)
 
 	log.Printf("🦜 Server listening on port %d\n ", config.HostPort)
