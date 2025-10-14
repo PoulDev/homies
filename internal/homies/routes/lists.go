@@ -15,7 +15,7 @@ type ItemInput struct {
 func getLists(c *gin.Context) {
 	jwtdata, _ := c.Get("data")
 	
-	dbuser, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
+	dbuser, err := db.GetUserMe(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err})
 		return
@@ -59,7 +59,7 @@ func newItem(c *gin.Context) {
 		return
 	}
 
-	dbuser, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
+	dbuser, err := db.GetUserMe(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err})
 		return
@@ -93,7 +93,7 @@ func getItems(c *gin.Context) {
 		return
 	}
 
-	dbuser, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
+	dbuser, err := db.GetUserMe(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err})
 		return
@@ -143,7 +143,7 @@ func updateItem(c *gin.Context) {
 		- Item ID in list (item_lid == list_id) ( db side? )
 	*/
 
-	dbuser, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
+	dbuser, err := db.GetUserMe(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err})
 		return

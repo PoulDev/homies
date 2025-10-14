@@ -24,7 +24,7 @@ func userInfo(c *gin.Context) {
 		return
 	}
 
-	dbuser, err := db.GetUser(uid)
+	dbuser, err := db.GetUserMe(uid)
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err})
 		return
@@ -36,7 +36,7 @@ func userInfo(c *gin.Context) {
 func homeOverview(c *gin.Context) {
 	jwtdata, _ := c.Get("data")	
 
-	user, err := db.GetUser(jwtdata.(jwt.MapClaims)["uid"].(string))
+	user, err := db.GetUserMe(jwtdata.(jwt.MapClaims)["uid"].(string))
 	if (err != nil) {
 		c.JSON(400, gin.H{"error": err})
 		return

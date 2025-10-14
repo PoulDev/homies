@@ -116,6 +116,9 @@ func GetUserHouseEx(exec Execer, user string) (models.House, error) {
 	err := exec.QueryRow(`SELECT house FROM users WHERE id = $1`, user).Scan(&tmp_houseid);
 
 	if (err != nil) {
+		if err == sql.ErrNoRows {
+			return models.House{}, errors.New(models.UserNotFound)
+		}
 		logger.Logger.Error("user house ID retrival error", "err", err.Error())
 		return models.House{}, err
 	}

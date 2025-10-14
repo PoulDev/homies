@@ -35,6 +35,23 @@ func GetUser(id string) (models.DBUser, error) {
 	}
 }
 
+// Same as GetUser, but if the user is not found
+// it returns a DBError NotAuthenticated instead of UserNotFound
+func GetUserMe(user string) (models.DBUser, error) {
+	dbuser, err := GetUser(user)
+	if (err != nil) {
+		if dberr, ok := err.(models.DBError); ok {
+			if dberr.ErrorCode == models.UserNotFound {
+				return models.DBUser{}, &models.DBError{
+					Message: "Your user was not found in the database!",
+					ErrorCode: models.NotAuthenticated,
+				}
+			}
+		}
+		return models.DBUser{}, err
+	}
+	return dbuser, nil
+}
 
 func ChangeHouse(user string, house string) error {
 	err := execers.ChangeHouseEx(db, user, house)
@@ -126,10 +143,17 @@ func GetUserHouse(user string) (models.House, error) {
 		return house, nil
 	}
 
-	if err.Error() == "no_house" {
+	if err.Error() == models.UserNotInHouse {
 		return models.House{}, &models.DBError{
 			Message:   "This user is not in a house!",
 			ErrorCode: models.UserNotInHouse,
+		}
+	}
+
+	if err.Error() == models.UserNotFound {
+		return models.House{}, &models.DBError{
+			Message:   "User not found in the database!",
+			ErrorCode: models.UserNotFound,
 		}
 	}
 

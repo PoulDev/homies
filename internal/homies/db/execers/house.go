@@ -91,16 +91,13 @@ func NewHouseEx(exec *sql.DB, name string, owner string) (string, string, error)
 func GetHouseEx(exec Execer, house string, skipUser string) (models.House, error) {
 	var resHouse models.House
 	var houseid int64
-	var owner int64
 
 	logger.Logger.Info("get house", "house", house)
-	err := exec.QueryRow("SELECT id, invite, name, owner FROM houses WHERE id = $1", house).Scan(&houseid, &resHouse.Invite, &resHouse.Name, &owner)
+	err := exec.QueryRow("SELECT id, invite, name, owner FROM houses WHERE id = $1", house).Scan(&houseid, &resHouse.Invite, &resHouse.Name, &resHouse.Owner)
 	if (err != nil) {
 		logger.Logger.Error("house get error", "err", err.Error())
 		return models.House{}, err
 	}
-
-	resHouse.Owner = strconv.FormatInt(owner, 10)
 
 	// Retrive house Members
 	// Why this must be a mess every fucking time?
