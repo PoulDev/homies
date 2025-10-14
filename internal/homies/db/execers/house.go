@@ -105,7 +105,7 @@ func GetHouseEx(exec Execer, house string, skipUser string) (models.House, error
 	var rows *sql.Rows
 
 	if skipUser == "" {
-		rows, err = exec.Query(`SELECT $ FROM users WHERE house = $1`, houseid);
+		rows, err = exec.Query(`SELECT id, name, bg_color, face_color, face_x, face_y, left_eye_x, left_eye_y, right_eye_x, right_eye_y, bezier FROM users WHERE house = $1`, houseid);
 	} else {
 		rows, err = exec.Query(`SELECT id, name, bg_color, face_color, face_x, face_y, left_eye_x, left_eye_y, right_eye_x, right_eye_y, bezier FROM users WHERE house = $1 AND id != $2`, houseid, skipUser);
 	}
