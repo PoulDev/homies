@@ -118,25 +118,3 @@ func setAvatar(c *gin.Context) {
 	c.JSON(200, gin.H{});
 }
 
-func getAvatar(c *gin.Context) {
-	jwtdata, _ := c.Get("data")
-
-	user, err := db.GetUserMe(jwtdata.(jwt.MapClaims)["uid"].(string))
-	if (err != nil) {
-		c.JSON(400, gin.H{"error": err})
-		return
-	}
-
-	raw := fmt.Sprintf(`
-<svg width="80" height="80" xmlns="http://www.w3.org/2000/svg">
-    <circle r="40" cx="40" cy="40" fill="#%s"/>
-    <g transform="translate(%f, %f) scale(2)">
-        <path d="M4 10c%s" stroke="#%s" fill="none" stroke-linecap="round"></path>
-        <rect x="%f" y="%f" width="1.5" height="2" rx="1" stroke="none" fill="#%s"></rect>
-        <rect x="%f" y="%f" width="1.5" height="2" rx="1" stroke="none" fill="#%s"></rect>
-    </g>
-</svg>
-	`, user.Avatar.BgColor, user.Avatar.FaceX, user.Avatar.FaceY, user.Avatar.Bezier, user.Avatar.FaceColor, user.Avatar.LeX, user.Avatar.LeY, user.Avatar.FaceColor, user.Avatar.ReX, user.Avatar.ReY, user.Avatar.FaceColor)
-
-	c.Data(200, "image/svg+xml; charset=utf-8", []byte(raw))
-}
