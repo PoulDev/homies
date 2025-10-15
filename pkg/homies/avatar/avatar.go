@@ -3,59 +3,68 @@ package avatar
 import (
 	"fmt"
 	"math/rand/v2"
+	"math"
 
 	"github.com/zibbadies/homies/internal/homies/models"
 )
 
-type Color struct {
+type RGBColor struct {
 	R int
 	G int
 	B int
 }
 
-var colors = []Color{
-	{255, 212, 120},
-	{255, 125, 122},
-	{122, 164, 255},
-	{122, 209, 255},
-	{122, 255, 213},
-	{213, 122, 255},
-	{164, 255, 122},
-	{122, 164, 255},
-	{213, 122, 255},
-	{122, 255, 147},
-	{122, 164, 255},
-	{255, 122, 231},
+type HSLColor struct {
+	H float64
+	S float64
+	L float64
 }
 
-func isDark(color Color) bool {
+func HSL2RGB(color HSLColor) RGBColor {
+	var rp, gp, bp float64;
+	C := (1.0 - math.Abs(2.0 * color.L - 1.0)) * color.S;
+	X := C * (1.0 - math.Abs(math.Mod(color.H*6, 2) - 1.0));
+	m := color.L - C/2;
+
+    if 0 <= color.H && color.H < 1.0/6.0 {
+        rp, gp, bp = C, X, 0
+    } else if 1.0/6.0 <= color.H && color.H < 2.0/6.0 {
+        rp, gp, bp = X, C, 0
+    } else if 2.0/6.0 <= color.H && color.H < 3.0/6.0 {
+        rp, gp, bp = 0, C, X
+    } else if 3.0/6.0 <= color.H && color.H < 4.0/6.0 {
+        rp, gp, bp = 0, X, C
+    } else if 4.0/6.0 <= color.H && color.H < 5.0/6.0 {
+        rp, gp, bp = X, 0, C
+    } else {
+        rp, gp, bp = C, 0, X
+    }
+
+	return RGBColor{
+		int((rp + m) * 255),
+		int((gp + m) * 255),
+		int((bp + m) * 255),
+	}
+}
+
+func isDark(color RGBColor) bool {
 	luminance := float64(0.2126)*float64(color.R) + float64(0.7152)*float64(color.G) + float64(0.0722)*float64(color.B);
 	return luminance <= 190;
 }
 
-func changeColor(v int) int {
-	val := float64(v) + rand.Float64()*30.0 - 15
-	if val > 255 {
-		val = 255;
-	} else if v < 0 {
-		val = 0;
-	}
-	return int(val);
-}
-
-func color2hex(color Color) string {
+func color2hex(color RGBColor) string {
 	return fmt.Sprintf("%x%x%x", color.R, color.G, color.B);
 }
 
 func RandAvatar() models.Avatar {
-	oColor := colors[rand.IntN(len(colors))];
-	RGBcolor := Color{
-		changeColor(oColor.R),
-		changeColor(oColor.G),
-		changeColor(oColor.B),
+	hslColor := HSLColor{
+		rand.Float64(),
+		0.70,
+		0.80,
 	}
 
-	color := color2hex(RGBcolor);
+	rgbColor := HSL2RGB(hslColor);
+	color := color2hex(rgbColor);
 
 	firstPoint := fmt.Sprintf("%d %d", rand.IntN(4), 1+rand.IntN(2));
 	secondPoint := fmt.Sprintf("%d %d", rand.IntN(4)+3, 1+rand.IntN(2));
@@ -63,7 +72,7 @@ func RandAvatar() models.Avatar {
 	eyesSpace := (rand.Float32()*8 + 4) / 2;
 
 	var faceColor string;
-	if isDark(RGBcolor) {
+	if isDark(rgbColor) {
 		faceColor = "EFEFEF";
 	} else {
 		faceColor = "010101";

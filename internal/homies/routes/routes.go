@@ -32,6 +32,7 @@ func SetupRoutes(router *gin.Engine) {
 	userRoutes.GET("/:id/overview", homeOverview)
 	userRoutes.GET("/:id/avatar", generateAvatar)
 	userRoutes.PATCH("/:id/avatar", setAvatar)
+	userRoutes.GET("/:id/view_avatar", getAvatar)
 
 	houseRoutes := router.Group("/house")
 	houseRoutes.Use(middlewares.GetLimiter(ratelimit.New(houseRLimit)))
