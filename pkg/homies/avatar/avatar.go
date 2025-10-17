@@ -59,8 +59,8 @@ func color2hex(color RGBColor) string {
 func RandAvatar() models.Avatar {
 	hslColor := HSLColor{
 		rand.Float64(),
-		0.70,
-		0.80,
+		0.75,
+		0.75,
 	}
 
 	rgbColor := HSL2RGB(hslColor);
